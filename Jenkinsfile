@@ -4,7 +4,7 @@ kind: Pod
 spec:
   containers:
   - name: openjdk
-    image: openjdk:11
+    image: openjdk:8
     tty: true
 """
 
