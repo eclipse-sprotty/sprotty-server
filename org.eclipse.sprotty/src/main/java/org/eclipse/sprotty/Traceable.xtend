@@ -13,9 +13,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/ 
-package org.eclipse.sprotty.xtext.tracing
+package org.eclipse.sprotty
 
 interface Traceable {
 	def String getTrace()
 	def void setTrace(String trace)
 }
+

@@ -12,7 +12,8 @@
  * https://www.gnu.org/software/classpath/license.html.
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
- ********************************************************************************/ 
+ ********************************************************************************/
+  
 package org.eclipse.sprotty.xtext.tracing
 
 import org.eclipse.emf.ecore.EObject
@@ -25,7 +26,7 @@ import org.eclipse.xtext.resource.XtextResource
 import org.eclipse.xtext.resource.EObjectAtOffsetHelper
 import com.google.inject.Inject
 
-class TraceRegionProvider {
+class TextRegionProvider {
 
 	@Inject extension EObjectAtOffsetHelper
 	
