@@ -31,7 +31,7 @@ configure(subprojects.findAll {it.file('src').exists()}) {
 		}
 	}
 	
-	group = 'io.typefox.sprotty'
+	group = 'org.eclipse.sprotty'
 	version = rootProject.version
 	
 	apply plugin: 'java'
