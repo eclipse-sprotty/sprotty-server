@@ -20,4 +20,5 @@ description = "Server API for providing sprotty diagrams"
 dependencies {
 	compile "javax.inject:javax.inject:1"
     compile "org.eclipse.xtend:org.eclipse.xtend.lib:${versions.xtext}"
+    compile "log4j:log4j:${versions.log4j}"
 }

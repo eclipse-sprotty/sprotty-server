@@ -16,6 +16,9 @@
 package org.eclipse.sprotty.xtext.testlanguage.diagram
 
 import com.google.inject.Singleton
+import java.util.List
+import org.eclipse.emf.common.util.URI
+import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.sprotty.IDiagramState
 import org.eclipse.sprotty.SGraph
 import org.eclipse.sprotty.SModelRoot
@@ -23,12 +26,8 @@ import org.eclipse.sprotty.SNode
 import org.eclipse.sprotty.xtext.IDiagramGenerator
 import org.eclipse.sprotty.xtext.LanguageAwareDiagramServer
 import org.eclipse.sprotty.xtext.testlanguage.testLanguage.Model
-import java.util.List
-import org.eclipse.emf.common.util.URI
-import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.Data
-import org.eclipse.xtext.util.CancelIndicator
 
 @Singleton
 class TestLanguageDiagramGenerator implements IDiagramGenerator {
@@ -59,21 +58,19 @@ class TestLanguageDiagramGenerator implements IDiagramGenerator {
 	@Accessors
 	val List<Result> results = newArrayList
 	
-	override generate(Resource resource, IDiagramState state, CancelIndicator cancelIndicator) {
-		val model = resource.contents.head
+	override generate(Context context) {
+		val model = context.resource.contents.head
 		if (model instanceof Model) {
 			val result = new SGraph
-			result.type = 'graph'
 			result.id = 'graph'
 			result.children = newArrayList
 			for (node : model.nodes) {
 				val snode = new SNode
-				snode.type = 'node'
 				snode.id = node.name
 				result.children += snode
 			}
 			synchronized (results) {
-				results += new Result(resource, state, result)
+				results += new Result(context.resource, context.state, result)
 			}
 			return result
 		}

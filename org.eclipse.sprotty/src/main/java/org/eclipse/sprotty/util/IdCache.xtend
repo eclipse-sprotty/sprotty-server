@@ -14,21 +14,25 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-package org.eclipse.sprotty.xtext
+package org.eclipse.sprotty.util
 
 import java.util.Map
-import org.eclipse.emf.ecore.EObject
-import org.eclipse.xtext.util.internal.Log
 import java.util.Set
+import org.eclipse.sprotty.SModelElement
+import org.apache.log4j.Logger
 
-@Log
-class IdCache {
+/** 
+ * Helps to create unique IDs for {@link SModelElement}s.
+ */
+class IdCache <T> {
 	
-	Map<EObject, String> element2id = newHashMap
-	Map<String, EObject> id2element = newHashMap
+	static val LOG = Logger.getLogger(IdCache)
+
+	Map<T, String> element2id = newHashMap
+	Map<String, T> id2element = newHashMap
 	Set<String> otherIds = newHashSet
-	
-	def String uniqueId(EObject element, String idProposal) {
+
+	def String uniqueId(T element, String idProposal) {
 		uniqueId(element, idProposal, 0)
 	}
 
@@ -36,36 +40,38 @@ class IdCache {
 		uniqueId(null, idProposal, 0)
 	}
 
-	protected def String uniqueId(EObject element, String idPrefix, int count) {
-		val proposedId = if(count === 0)
+	protected def String uniqueId(T element, String idPrefix, int count) {
+		val proposedId = if (count === 0)
 				idPrefix
 			else
 				idPrefix + count
-				
+
 		val existingElement = id2element.get(proposedId)
 		if (existingElement !== null) {
-			if (existingElement == element) {
+			if (existingElement == element)
 				return proposedId
-			} else {
-				LOG.warn('''Duplicate ID '«proposedId»'«»''')
-				return uniqueId(element, proposedId, count + 1)
-			}  
-		} 
-		if (otherIds.contains(proposedId)) {
-			LOG.warn('''Duplicate ID '«proposedId»'«»''')
-			return uniqueId(element, proposedId, count + 1)
-		} 
-		
-		if(element === null) { 
+			else
+				handleDuplicate(element, idPrefix, count)
+
+		}
+		if (otherIds.contains(proposedId))
+			handleDuplicate(element, idPrefix, count)
+
+		if (element === null) {
 			otherIds.add(proposedId)
 		} else {
 			element2id.put(element, proposedId)
 			id2element.put(proposedId, element)
 		}
-		return proposedId 
+		return proposedId
 	}
 
-	def getId(EObject element) {
+	def getId(T element) {
 		element2id.get(element)
+	}
+
+	protected def String handleDuplicate(T element, String duplicateId, int count) {
+		LOG.warn('''Duplicate ID '«duplicateId»«if (count > 0) count else ''»'«»''')
+		return uniqueId(element, duplicateId, count + 1)
 	}
 }

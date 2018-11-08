@@ -28,16 +28,11 @@ import org.eclipse.xtend.lib.annotations.ToString
  */
 @Accessors
 @ToString(skipNulls = true)
-abstract class SModelElement implements Traceable {
+abstract class SModelElement {
 	String type
 	String id
 	List<SModelElement> children
 	String trace
-	
-	new() {}
-	new(Consumer<SModelElement> initializer) {
-		initializer.accept(this)
-	}
 }
 
 /**
@@ -49,8 +44,11 @@ class SModelRoot extends SModelElement {
 	Bounds canvasBounds
 	int revision
 	
-	new() {}
+	new() {
+		type = 'root'
+	}
 	new(Consumer<SModelRoot> initializer) {
+		this()
 		initializer.accept(this)
 	}
 }
@@ -65,26 +63,24 @@ class SGraph extends SModelRoot implements BoundsAware {
 	Dimension size
 	LayoutOptions layoutOptions
 
-	new() {}
+	new() {
+		type = 'graph'	
+	}
 	new(Consumer<SGraph> initializer) {
+		this()
 		initializer.accept(this)
 	}
 }
 
 /**
- * Superclass for a lot of 
+ * Superclass for a lot of elements.
  */
 @Accessors
 @ToString(skipNulls = true)
-class SShapeElement extends SModelElement implements BoundsAware {
+abstract class SShapeElement extends SModelElement implements BoundsAware {
 	Point position
 	Dimension size
 	LayoutOptions layoutOptions
-	
-	new() {}
-	new(Consumer<SShapeElement> initializer) {
-		initializer.accept(this)
-	}
 }
 
 /**
@@ -97,8 +93,11 @@ class SShapeElement extends SModelElement implements BoundsAware {
 class SNode extends SShapeElement implements Layouting {
 	String layout
 	
-	new() {}
+	new() {
+		type = 'node'
+	}
 	new(Consumer<SNode> initializer) {
+		this()
 		initializer.accept(this)
 	}
 }
@@ -109,8 +108,11 @@ class SNode extends SShapeElement implements Layouting {
 @Accessors
 @ToString(skipNulls = true)
 class SPort extends SShapeElement {
-	new() {}
+	new() {
+		type = 'port'
+	}
 	new(Consumer<SPort> initializer) {
+		this()
 		initializer.accept(this)
 	}
 }
@@ -127,8 +129,11 @@ class SEdge extends SModelElement {
 	String targetId
 	List<Point> routingPoints
 	
-	new() {}
+	new() {
+		type = 'edge'
+	}
 	new(Consumer<SEdge> initializer) {
+		this()
 		initializer.accept(this)
 	}
 }
@@ -142,8 +147,11 @@ class SLabel extends SShapeElement implements Alignable {
 	String text
 	Point alignment
 	
-	new() {}
+	new() {
+		type = 'label'
+	}
 	new(Consumer<SLabel> initializer) {
+		this()
 		initializer.accept(this)
 	}
 }
@@ -157,8 +165,11 @@ class SLabel extends SShapeElement implements Alignable {
 class SCompartment extends SShapeElement implements Layouting {
 	String layout
 	
-	new() {}
+	new() {
+		type = 'comp'
+	}
 	new(Consumer<SCompartment> initializer) {
+		this()
 		initializer.accept(this)
 	}
 }
@@ -172,8 +183,11 @@ class SCompartment extends SShapeElement implements Layouting {
 class SButton extends SShapeElement implements BoundsAware {
 	Boolean enabled
 	
-	new() {}
+	new() {
+		type = 'button'
+	}
 	new(Consumer<SButton> initializer) {
+		this()
 		initializer.accept(this)
 	}
 }
@@ -212,8 +226,11 @@ class LayoutOptions {
 class HtmlRoot extends SModelRoot {
     List<String> classes
 	
-	new() {}
+	new() {
+		type = 'hmtl'
+	}
 	new(Consumer<HtmlRoot> initializer) {
+		this()
 		initializer.accept(this)
 	}
 }
@@ -227,8 +244,51 @@ class HtmlRoot extends SModelRoot {
 class PreRenderedElement extends SModelElement {
 	String code
 	
-	new() {}
+	new() {
+		type = 'pre-rendered'
+	}
 	new(Consumer<PreRenderedElement> initializer) {
+		this()
 		initializer.accept(this)
 	}
 }
+
+/**
+ * A small decorator marking issues on an SModelElement.
+ */
+@Accessors
+@ToString(skipNulls = true)
+class SIssueMarker extends SShapeElement {
+	
+	List<SIssue> issues
+
+	new() {
+		type = 'marker'
+	}
+	new(Consumer<SIssueMarker> initializer) {
+		this()
+		initializer.accept(this)
+	}	
+	
+}
+
+@Accessors
+@ToString(skipNulls = true)
+class SIssue {
+	enum Severity { error, warning, info }
+	
+	String message
+
+	@Accessors(PUBLIC_GETTER)
+	String severity
+	
+	new() {}
+	new(Consumer<SIssue> initializer) {
+		initializer.accept(this)
+	}
+	
+	def setSeverity(Severity severity) {
+		this.severity = severity.toString
+	}	
+}
+

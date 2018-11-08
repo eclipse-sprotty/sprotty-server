@@ -25,7 +25,6 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EStructuralFeature
 import org.eclipse.sprotty.SModelElement
 import org.eclipse.sprotty.SModelRoot
-import org.eclipse.sprotty.Traceable
 import org.eclipse.sprotty.xtext.ILanguageAwareDiagramServer
 import org.eclipse.xtext.ide.server.ILanguageServerAccess.Context
 import org.eclipse.xtext.ide.server.UriExtensions
@@ -40,27 +39,27 @@ class XtextTraceProvider implements ITraceProvider {
 	@Inject extension ILocationInFileProvider
 	@Inject extension PositionConverter
 	 
-	override trace(Traceable traceable, EObject source) {
+	override trace(SModelElement SModelElement, EObject source) {
 		val textRegion = source.getFullTextRegion()
-		doTrace(traceable, source, textRegion)
+		doTrace(SModelElement, source, textRegion)
 	}
 	
-	override <T extends Traceable> trace(T traceable, EObject source, EStructuralFeature feature, int index) {
+	override <T extends SModelElement> trace(T SModelElement, EObject source, EStructuralFeature feature, int index) {
 		val textRegion = source.getFullTextRegion(feature, index)
-		doTrace(traceable, source, textRegion)
+		doTrace(SModelElement, source, textRegion)
 	}
 	
-	protected def <T extends Traceable> T doTrace(T traceable, EObject source, ITextRegion textRegion) {
+	protected def <T extends SModelElement> T doTrace(T SModelElement, EObject source, ITextRegion textRegion) {
 		val range = textRegion.toRange(source)
 		val uri = source.normalizedURI.withEmptyAuthority
 		val trace = new XtextTrace(uri, range)
-		traceable.trace = trace.toString()
-		traceable
+		SModelElement.trace = trace.toString()
+		SModelElement
 	}
 
-	override <T> withSource(Traceable traceable, ILanguageAwareDiagramServer callingServer, BiFunction<EObject, Context, T> readOperation) {
-		if (traceable.trace !== null) {
-			val trace = new XtextTrace(traceable.trace)
+	override <T> withSource(SModelElement SModelElement, ILanguageAwareDiagramServer callingServer, BiFunction<EObject, Context, T> readOperation) {
+		if (SModelElement.trace !== null) {
+			val trace = new XtextTrace(SModelElement.trace)
 			val path = uriExtensions.toUriString(trace.elementURI.trimFragment)
 			return callingServer.languageServerExtension.languageServerAccess.doRead(path) [ context |
 				val element = context.resource.resourceSet.getEObject(trace.elementURI, true)
@@ -70,7 +69,7 @@ class XtextTraceProvider implements ITraceProvider {
 		return CompletableFuture.completedFuture(null)
 	}
 	
-	override SModelElement findTraceable(SModelRoot root, EObject element) {
+	override SModelElement findSModelElement(SModelRoot root, EObject element) {
 		val containerChain = newArrayList
 		var currentContainer = element
 		while(currentContainer !== null) {
@@ -79,7 +78,7 @@ class XtextTraceProvider implements ITraceProvider {
 		} 
 		val uri2container = containerChain.toMap[normalizedURI.withEmptyAuthority]
 		val results = newHashMap
-		doFindTraceable(root, uri2container) [
+		doFindSModelElement(root, uri2container) [
 			results.put($0, $1)
 		]
 		if(results.empty)
@@ -88,7 +87,7 @@ class XtextTraceProvider implements ITraceProvider {
 		 	return results.entrySet.minBy[containerChain.indexOf(key)].value
 	}
 	
-	protected def void doFindTraceable(SModelElement element, Map<URI, EObject> uri2container, (EObject, SModelElement)=>void result) {
+	protected def void doFindSModelElement(SModelElement element, Map<URI, EObject> uri2container, (EObject, SModelElement)=>void result) {
 		if (element.trace !== null) {
 			val trace = new XtextTrace(element.trace)
 			val candidate = uri2container.get(trace.elementURI)
@@ -96,7 +95,7 @@ class XtextTraceProvider implements ITraceProvider {
 				result.apply(candidate, element)
 		}
 		element.children?.forEach [
-			doFindTraceable(uri2container, result)
+			doFindSModelElement(uri2container, result)
 		]
 	}
 }
