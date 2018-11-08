@@ -28,10 +28,11 @@ import org.eclipse.xtend.lib.annotations.ToString
  */
 @Accessors
 @ToString(skipNulls = true)
-abstract class SModelElement {
+abstract class SModelElement implements Traceable {
 	String type
 	String id
 	List<SModelElement> children
+	String trace
 	
 	new() {}
 	new(Consumer<SModelElement> initializer) {

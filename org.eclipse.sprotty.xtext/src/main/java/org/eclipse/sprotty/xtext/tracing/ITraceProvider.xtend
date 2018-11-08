@@ -22,12 +22,17 @@ import java.util.concurrent.CompletableFuture
 import java.util.function.BiFunction
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.ide.server.ILanguageServerAccess.Context
+import org.eclipse.sprotty.Traceable
+import org.eclipse.sprotty.SModelElement
+import org.eclipse.emf.ecore.EStructuralFeature
 
 interface ITraceProvider {
-	
-	def void trace(Traceable traceable, EObject source)
+
+	def <T extends Traceable> T trace(T traceable, EObject source)
+
+	def <T extends Traceable> T trace(T traceable, EObject source, EStructuralFeature feature, int index)
 	
 	def <T> CompletableFuture<T> withSource(Traceable traceable, ILanguageAwareDiagramServer languageServer, BiFunction<EObject, Context, T> readOperation)
 	
-	def Traceable findTracable(SModelRoot root, EObject element) 
+	def SModelElement findTraceable(SModelRoot root, EObject element) 
 }

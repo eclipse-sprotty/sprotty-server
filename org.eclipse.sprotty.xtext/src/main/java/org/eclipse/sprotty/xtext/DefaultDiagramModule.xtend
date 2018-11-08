@@ -22,7 +22,7 @@ import org.eclipse.sprotty.ILayoutEngine
 import org.eclipse.sprotty.IModelUpdateListener
 import org.eclipse.sprotty.IPopupModelFactory
 import org.eclipse.sprotty.xtext.tracing.ITraceProvider
-import org.eclipse.sprotty.xtext.tracing.UriTraceProvider
+import org.eclipse.sprotty.xtext.tracing.XtextTraceProvider
 import org.eclipse.xtext.ide.server.ILanguageServerExtension
 import org.eclipse.xtext.service.AbstractGenericModule
 import org.eclipse.sprotty.IDiagramOpenListener
@@ -70,6 +70,6 @@ class DefaultDiagramModule extends AbstractGenericModule {
 	}
 	
 	def Class<? extends ITraceProvider> bindTraceProvider() {
-		UriTraceProvider
+		XtextTraceProvider
 	}
 }

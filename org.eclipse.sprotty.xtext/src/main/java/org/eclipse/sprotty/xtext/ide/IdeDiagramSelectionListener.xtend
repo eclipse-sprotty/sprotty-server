@@ -16,6 +16,8 @@
 package org.eclipse.sprotty.xtext.ide
 
 import com.google.inject.Inject
+import org.eclipse.lsp4j.Location
+import org.eclipse.lsp4j.Range
 import org.eclipse.sprotty.Action
 import org.eclipse.sprotty.IDiagramSelectionListener
 import org.eclipse.sprotty.IDiagramServer
@@ -23,10 +25,7 @@ import org.eclipse.sprotty.SModelIndex
 import org.eclipse.sprotty.SelectAction
 import org.eclipse.sprotty.xtext.ILanguageAwareDiagramServer
 import org.eclipse.sprotty.xtext.tracing.ITraceProvider
-import org.eclipse.sprotty.xtext.tracing.TraceRegionProvider
-import org.eclipse.sprotty.xtext.tracing.Traceable
-import org.eclipse.lsp4j.Location
-import org.eclipse.lsp4j.Range
+import org.eclipse.sprotty.xtext.tracing.TextRegionProvider
 import org.eclipse.xtext.ide.server.UriExtensions
 
 class IdeDiagramSelectionListener implements IDiagramSelectionListener {
@@ -35,7 +34,7 @@ class IdeDiagramSelectionListener implements IDiagramSelectionListener {
 	
 	@Inject extension ITraceProvider
 
-	@Inject extension TraceRegionProvider
+	@Inject extension TextRegionProvider
 	
 	override selectionChanged(Action action, IDiagramServer server) {
 		if (action instanceof SelectAction && server instanceof ILanguageAwareDiagramServer) {
@@ -49,7 +48,7 @@ class IdeDiagramSelectionListener implements IDiagramSelectionListener {
 			if (action.selectedElementsIDs !== null && action.selectedElementsIDs.size === 1)  {
 				val id = action.selectedElementsIDs.head
 				val selectedElement = new SModelIndex(server.model).get(id)
-				if (selectedElement instanceof Traceable) {
+				if (selectedElement?.trace !== null) {
 					selectedElement.withSource(server) [ element, context |
 						if (element !== null) {
 							val traceRegion = element.significantRegion

@@ -16,16 +16,15 @@
 package org.eclipse.sprotty.xtext.ide
 
 import com.google.inject.Inject
+import org.eclipse.lsp4j.Location
+import org.eclipse.lsp4j.Range
 import org.eclipse.sprotty.IDiagramOpenListener
 import org.eclipse.sprotty.IDiagramServer
 import org.eclipse.sprotty.OpenAction
 import org.eclipse.sprotty.SModelIndex
 import org.eclipse.sprotty.xtext.ILanguageAwareDiagramServer
 import org.eclipse.sprotty.xtext.tracing.ITraceProvider
-import org.eclipse.sprotty.xtext.tracing.TraceRegionProvider
-import org.eclipse.sprotty.xtext.tracing.Traceable
-import org.eclipse.lsp4j.Location
-import org.eclipse.lsp4j.Range
+import org.eclipse.sprotty.xtext.tracing.TextRegionProvider
 import org.eclipse.xtext.ide.server.UriExtensions
 
 class IdeDiagramOpenListener implements IDiagramOpenListener {
@@ -34,14 +33,14 @@ class IdeDiagramOpenListener implements IDiagramOpenListener {
 
 	@Inject extension ITraceProvider
 
-	@Inject extension TraceRegionProvider
+	@Inject extension TextRegionProvider
 
 	override elementOpened(OpenAction action, IDiagramServer server) {
 		if (server instanceof ILanguageAwareDiagramServer) {
 			val languageServerExtension = server.languageServerExtension
 			if (languageServerExtension instanceof IdeLanguageServerExtension) {
 				val selectedElement = new SModelIndex(server.model).get(action.elementId)
-				if (selectedElement instanceof Traceable) {
+				if (selectedElement?.trace !== null) {
 					selectedElement.withSource(server) [ element, context |
 						if (element !== null) {
 							val traceRegion = element.significantRegion

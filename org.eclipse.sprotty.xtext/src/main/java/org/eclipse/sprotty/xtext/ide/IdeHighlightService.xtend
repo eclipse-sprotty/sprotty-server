@@ -17,12 +17,11 @@ package org.eclipse.sprotty.xtext.ide
 
 import com.google.inject.Inject
 import org.eclipse.sprotty.FitToScreenAction
-import org.eclipse.sprotty.SModelElement
 import org.eclipse.sprotty.SelectAction
 import org.eclipse.sprotty.SelectAllAction
 import org.eclipse.sprotty.xtext.DiagramLanguageServerExtension
 import org.eclipse.sprotty.xtext.tracing.ITraceProvider
-import org.eclipse.sprotty.xtext.tracing.TraceRegionProvider
+import org.eclipse.sprotty.xtext.tracing.TextRegionProvider
 import org.eclipse.xtext.ide.server.occurrences.DefaultDocumentHighlightService
 import org.eclipse.xtext.resource.XtextResource
 
@@ -30,7 +29,7 @@ class IdeHighlightService extends DefaultDocumentHighlightService {
 
 	@Inject extension DiagramLanguageServerExtension
 
-	@Inject extension TraceRegionProvider
+	@Inject extension TextRegionProvider
 
 	@Inject extension ITraceProvider
 
@@ -38,17 +37,17 @@ class IdeHighlightService extends DefaultDocumentHighlightService {
 		val result = super.getDocumentHighlights(resource, offset)
 		findDiagramServersByUri(resource.getURI.toString).forEach [ server |
 			val element = resource.getElementAtOffset(offset)
-			val traceable = server.model.findTracable(element)
+			val traceable = server.model.findTraceable(element)
 			if (traceable !== null) {
 				server.dispatch(new SelectAllAction [
 					select = false
 				])
 				server.dispatch(new SelectAction [
-					selectedElementsIDs = #[(traceable as SModelElement).id]
+					selectedElementsIDs = #[traceable.id]
 				])
 				server.dispatch(new FitToScreenAction [
 					maxZoom = 1.0
-					elementIds = #[(traceable as SModelElement).id]
+					elementIds = #[traceable.id]
 				])
 			}
 		]
