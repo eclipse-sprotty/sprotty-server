@@ -227,7 +227,7 @@ class HtmlRoot extends SModelRoot {
     List<String> classes
 	
 	new() {
-		type = 'hmtl'
+		type = 'html'
 	}
 	new(Consumer<HtmlRoot> initializer) {
 		this()

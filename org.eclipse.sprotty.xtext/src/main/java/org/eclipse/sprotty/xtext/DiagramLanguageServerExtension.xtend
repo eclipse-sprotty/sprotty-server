@@ -41,6 +41,7 @@ import org.eclipse.xtext.validation.Issue
 import static org.eclipse.sprotty.ServerStatus.Severity.*
 import org.eclipse.xtext.ide.server.ILanguageServerAccess.Context
 import org.eclipse.sprotty.util.IdCache
+import org.eclipse.emf.ecore.EObject
 
 /**
  * An extension of the <a href="https://github.com/Microsoft/language-server-protocol">Language Server Protocol (LSP)</a>
@@ -214,6 +215,6 @@ class DiagramLanguageServerExtension implements DiagramServerEndpoint, ILanguage
 	}
 	
 	protected def createDiagramGeneratorContext(Context context, IDiagramServer server, IssueProvider issueProvider) {
-		new IDiagramGenerator.Context(context.resource, server.diagramState, new IdCache(), issueProvider, context.cancelChecker)
+		new IDiagramGenerator.Context(context.resource, server.diagramState, new IdCache<EObject>(), issueProvider, context.cancelChecker)
 	}
 }

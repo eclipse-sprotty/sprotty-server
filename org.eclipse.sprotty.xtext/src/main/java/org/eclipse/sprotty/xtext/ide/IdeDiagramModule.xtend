@@ -40,4 +40,8 @@ class IdeDiagramModule extends DefaultDiagramModule {
 	override bindIDiagramOpenListener() {
 		IdeDiagramOpenListener
 	}
+	
+	override bindIPopupModelFactory() {
+		IdePopupModelFactory
+	}
 }

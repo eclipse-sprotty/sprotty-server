@@ -51,11 +51,11 @@ class IdCache <T> {
 			if (existingElement == element)
 				return proposedId
 			else
-				handleDuplicate(element, idPrefix, count)
+				return handleDuplicate(element, idPrefix, count)
 
 		}
 		if (otherIds.contains(proposedId))
-			handleDuplicate(element, idPrefix, count)
+			return handleDuplicate(element, idPrefix, count)
 
 		if (element === null) {
 			otherIds.add(proposedId)
