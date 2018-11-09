@@ -296,32 +296,36 @@ public class DefaultDiagramServer implements IDiagramServer {
 		String clientId = getClientId();
 		if (clientId != null && clientId.equals(message.getClientId())) {
 			Action action = message.getAction();
-			switch (action.getKind()) {
-				case RequestModelAction.KIND:
-					handle((RequestModelAction) action);
-					break;
-				case RequestPopupModelAction.KIND:
-					handle((RequestPopupModelAction) action);
-					break;
-				case ComputedBoundsAction.KIND:
-					handle((ComputedBoundsAction) action);
-					break;
-				case SelectAction.KIND:
-					handle((SelectAction) action);
-					break;
-				case SelectAllAction.KIND:
-					handle((SelectAllAction) action);
-					break;
-				case CollapseExpandAction.KIND:
-					handle((CollapseExpandAction) action);
-					break;
-				case CollapseExpandAllAction.KIND:
-					handle((CollapseExpandAllAction) action);
-					break;
-				case OpenAction.KIND:
-					handle((OpenAction) action);
-					break;
-			}
+			handleAction(action);
+		}
+	}
+
+	protected void handleAction(Action action) {
+		switch (action.getKind()) {
+			case RequestModelAction.KIND:
+				handle((RequestModelAction) action);
+				break;
+			case RequestPopupModelAction.KIND:
+				handle((RequestPopupModelAction) action);
+				break;
+			case ComputedBoundsAction.KIND:
+				handle((ComputedBoundsAction) action);
+				break;
+			case SelectAction.KIND:
+				handle((SelectAction) action);
+				break;
+			case SelectAllAction.KIND:
+				handle((SelectAllAction) action);
+				break;
+			case CollapseExpandAction.KIND:
+				handle((CollapseExpandAction) action);
+				break;
+			case CollapseExpandAllAction.KIND:
+				handle((CollapseExpandAllAction) action);
+				break;
+			case OpenAction.KIND:
+				handle((OpenAction) action);
+				break;
 		}
 	}
 	
