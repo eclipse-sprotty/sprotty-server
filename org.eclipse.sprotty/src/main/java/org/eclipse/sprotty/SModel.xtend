@@ -31,6 +31,7 @@ import org.eclipse.xtend.lib.annotations.ToString
 abstract class SModelElement {
 	String type
 	String id
+	List<String> cssClasses
 	List<SModelElement> children
 	String trace
 }
@@ -41,6 +42,12 @@ abstract class SModelElement {
 @Accessors
 @ToString(skipNulls = true)
 class SModelRoot extends SModelElement {
+	
+	public static final SModelRoot EMPTY_ROOT = new SModelRoot [
+		type = "NONE"
+		id = "EMPTY"
+	]
+	
 	Bounds canvasBounds
 	int revision
 	
