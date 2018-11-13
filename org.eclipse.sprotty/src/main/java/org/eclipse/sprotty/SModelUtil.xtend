@@ -17,11 +17,13 @@ package org.eclipse.sprotty
 
 import java.util.ArrayList
 import java.util.function.Consumer
+import org.eclipse.sprotty.util.IdCache
 
 /**
  * Convenient functions for generating sprotty diagrams.
  * 
- * @deprecated  
+ * @deprecated Use the constructors with the lambda parameter for convenient and 
+ * readable construction and the {@link IdCache} to provide unique id's.
  */
 @Deprecated
 final class SModelUtil {

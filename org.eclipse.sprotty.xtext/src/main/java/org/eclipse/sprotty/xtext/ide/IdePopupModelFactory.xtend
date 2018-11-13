@@ -1,3 +1,19 @@
+/********************************************************************************
+ * Copyright (c) 2018 TypeFox and others.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * This Source Code may also be made available under the following Secondary
+ * Licenses when the conditions for such availability set forth in the Eclipse
+ * Public License v. 2.0 are satisfied: GNU General Public License, version 2
+ * with the GNU Classpath Exception which is available at
+ * https://www.gnu.org/software/classpath/license.html.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+ ********************************************************************************/
+ 
 package org.eclipse.sprotty.xtext.ide
 
 import com.google.inject.Inject
@@ -15,6 +31,12 @@ import org.eclipse.xtext.documentation.IEObjectDocumentationProvider
 import org.eclipse.xtext.naming.IQualifiedNameConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 
+/**
+ * Provides pop-ups with issues, the qualified name and type, and the docs from a
+ * {@link SModelElement} that traces back to an Xtext model element.  
+ * 
+ * Uses fontawesome for the icons representing the issues' severities.
+ */
 class IdePopupModelFactory implements IPopupModelFactory {
 
 	@Inject extension ITraceProvider
@@ -48,11 +70,11 @@ class IdePopupModelFactory implements IPopupModelFactory {
 	}
 	
 	protected def CharSequence getIssueRow(SIssueMarker element) '''
-		<div class="infoBlock">
+		<div class="sprotty-infoBlock">
 			<div class="sprotty-infoRow">
 				«FOR issue: element.issues»
 					<div class="sprotty-infoText">
-						<i class="fa «issue.severity.fontawesomeIconClass» sprotty-«issue.severity»" />«issue.message»
+						<i class="fa «issue.severity.iconClass» sprotty-«issue.severity»" />«issue.message»
 					</div>
 				«ENDFOR»
 			</div>
@@ -60,7 +82,7 @@ class IdePopupModelFactory implements IPopupModelFactory {
 	'''
 	
 	
-	protected def getFontawesomeIconClass(String severity) {
+	protected def getIconClass(String severity) {
 		switch severity {
 			case 'error', 
 			case 'warning': 'fa-exclamation-circle'
@@ -82,7 +104,7 @@ class IdePopupModelFactory implements IPopupModelFactory {
 				new PreRenderedElement [
 					id = popupId + '-body'
 					code = '''
-						<div class="infoBlock">
+						<div class="sprotty-infoBlock">
 							«IF issueMarker !== null»
 								«getIssueRow(issueMarker)»
 							«ENDIF»

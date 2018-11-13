@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2018 TypeFox and others.
+ * Copyright (c) 2018 TypeFox and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -30,7 +30,7 @@ import org.eclipse.xtext.diagnostics.Diagnostic
  * Efficiently provides issues per model element.
  */
 class IssueProvider {
-	Multimap<URI, Issue> map
+	val Multimap<URI, Issue> map
 
 	new(List<Issue> issues) {
 		map = Multimaps.index(issues, [uriToProblem])
