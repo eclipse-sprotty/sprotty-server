@@ -37,7 +37,7 @@ class IdeHighlightService extends DefaultDocumentHighlightService {
 		val result = super.getDocumentHighlights(resource, offset)
 		findDiagramServersByUri(resource.getURI.toString).forEach [ server |
 			val element = resource.getElementAtOffset(offset)
-			val traceable = server.model.findTraceable(element)
+			val traceable = server.model.findSModelElement(element)
 			if (traceable !== null) {
 				server.dispatch(new SelectAllAction [
 					select = false

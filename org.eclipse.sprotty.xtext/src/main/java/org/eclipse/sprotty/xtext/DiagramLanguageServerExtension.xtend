@@ -17,28 +17,31 @@ package org.eclipse.sprotty.xtext
 
 import com.google.inject.Inject
 import com.google.inject.Provider
-import org.eclipse.sprotty.ActionMessage
-import org.eclipse.sprotty.IDiagramServer
-import org.eclipse.sprotty.ServerStatus
 import java.util.Collection
 import java.util.List
 import java.util.Map
 import java.util.concurrent.CompletableFuture
 import org.apache.log4j.Logger
 import org.eclipse.emf.common.util.URI
-import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.lsp4j.jsonrpc.Endpoint
 import org.eclipse.lsp4j.jsonrpc.services.ServiceEndpoints
+import org.eclipse.sprotty.ActionMessage
+import org.eclipse.sprotty.IDiagramServer
+import org.eclipse.sprotty.ServerStatus
 import org.eclipse.xtend.lib.annotations.Accessors
+import org.eclipse.xtext.diagnostics.Diagnostic
 import org.eclipse.xtext.diagnostics.Severity
 import org.eclipse.xtext.ide.server.ILanguageServerAccess
 import org.eclipse.xtext.ide.server.ILanguageServerExtension
 import org.eclipse.xtext.ide.server.UriExtensions
-import org.eclipse.xtext.util.CancelIndicator
 import org.eclipse.xtext.validation.CheckMode
 import org.eclipse.xtext.validation.IResourceValidator
+import org.eclipse.xtext.validation.Issue
 
 import static org.eclipse.sprotty.ServerStatus.Severity.*
+import org.eclipse.xtext.ide.server.ILanguageServerAccess.Context
+import org.eclipse.sprotty.util.IdCache
+import org.eclipse.emf.ecore.EObject
 
 /**
  * An extension of the <a href="https://github.com/Microsoft/language-server-protocol">Language Server Protocol (LSP)</a>
@@ -167,13 +170,16 @@ class DiagramLanguageServerExtension implements DiagramServerEndpoint, ILanguage
 			return CompletableFuture.completedFuture(null)
 		}
 		return path.doRead [ context |
-			val status = context.resource.shouldGenerate(context.cancelChecker)
+			val issues = context.resource?.validate(CheckMode.NORMAL_AND_FAST, context.cancelChecker)
+			val status = getServerStatus(issues)
+			val issueProvider = new IssueProvider(issues ?: emptyList) 
 			return diagramServers.map [ server |
 				server -> {
 					server.status = status
-					if (status.severity !== ERROR) {
+					if (shouldGenerate(status)) {
+						val generatorContext = createDiagramGeneratorContext(context, server, issueProvider)
 						val diagramGenerator = diagramGeneratorProvider.get
-						diagramGenerator.generate(context.resource, server.diagramState, context.cancelChecker)
+						diagramGenerator.generate(generatorContext)
 					} else {
 						null
 					}
@@ -187,14 +193,28 @@ class DiagramLanguageServerExtension implements DiagramServerEndpoint, ILanguage
 		]
 	}
 
-	protected def ServerStatus shouldGenerate(Resource resource, CancelIndicator cancelIndicator) {
-		if (resource === null)
-			return new ServerStatus(ERROR, 'Cannot update diagram: Model does not exist')
-		val issues = resource.validate(CheckMode.NORMAL_AND_FAST, cancelIndicator)
-		if (issues.exists[severity == Severity.ERROR]) 
-			return new ServerStatus(ERROR, 'Cannot update diagram: Model has errors')
-		if (issues.exists[severity == Severity.WARNING]) 
+	protected def ServerStatus getServerStatus(List<Issue> issues) {
+		if (issues === null)
+			return new ServerStatus(FATAL, 'Cannot update diagram: Model does not exist')
+		if (issues.exists[
+			severity === Severity.ERROR 
+				&& (code == Diagnostic.LINKING_DIAGNOSTIC 
+				|| code == Diagnostic.SYNTAX_DIAGNOSTIC
+				|| code == Diagnostic.SYNTAX_DIAGNOSTIC_WITH_RANGE)
+			])
+			return new ServerStatus(FATAL, 'Cannot update diagram: Model has syntax/linking errors')
+		if (issues.exists[severity === Severity.ERROR])
+			return new ServerStatus(ERROR, 'Model has validation errors')
+		if (issues.exists[severity === Severity.WARNING]) 
 			return new ServerStatus(WARNING, 'Model has warnings')
 		return ServerStatus.OK
+	}
+	
+	protected def shouldGenerate(ServerStatus status) {
+		return status.severity !== FATAL
+	}
+	
+	protected def createDiagramGeneratorContext(Context context, IDiagramServer server, IssueProvider issueProvider) {
+		new IDiagramGenerator.Context(context.resource, server.diagramState, new IdCache<EObject>(), issueProvider, context.cancelChecker)
 	}
 }

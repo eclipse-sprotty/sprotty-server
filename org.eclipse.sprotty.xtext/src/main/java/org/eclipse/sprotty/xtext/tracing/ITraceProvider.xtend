@@ -16,23 +16,22 @@
 
 package org.eclipse.sprotty.xtext.tracing
 
-import org.eclipse.sprotty.SModelRoot
-import org.eclipse.sprotty.xtext.ILanguageAwareDiagramServer
 import java.util.concurrent.CompletableFuture
 import java.util.function.BiFunction
 import org.eclipse.emf.ecore.EObject
-import org.eclipse.xtext.ide.server.ILanguageServerAccess.Context
-import org.eclipse.sprotty.Traceable
-import org.eclipse.sprotty.SModelElement
 import org.eclipse.emf.ecore.EStructuralFeature
+import org.eclipse.sprotty.SModelElement
+import org.eclipse.sprotty.SModelRoot
+import org.eclipse.sprotty.xtext.ILanguageAwareDiagramServer
+import org.eclipse.xtext.ide.server.ILanguageServerAccess.Context
 
 interface ITraceProvider {
 
-	def <T extends Traceable> T trace(T traceable, EObject source)
+	def <T extends SModelElement> T trace(T traceable, EObject source)
 
-	def <T extends Traceable> T trace(T traceable, EObject source, EStructuralFeature feature, int index)
+	def <T extends SModelElement> T trace(T traceable, EObject source, EStructuralFeature feature, int index)
 	
-	def <T> CompletableFuture<T> withSource(Traceable traceable, ILanguageAwareDiagramServer languageServer, BiFunction<EObject, Context, T> readOperation)
+	def <T> CompletableFuture<T> withSource(SModelElement traceable, ILanguageAwareDiagramServer languageServer, BiFunction<EObject, Context, T> readOperation)
 	
-	def SModelElement findTraceable(SModelRoot root, EObject element) 
+	def SModelElement findSModelElement(SModelRoot root, EObject element) 
 }

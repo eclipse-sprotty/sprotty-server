@@ -20,7 +20,10 @@ import java.util.function.Consumer
 
 /**
  * Convenient functions for generating sprotty diagrams.
+ * 
+ * @deprecated  
  */
+@Deprecated
 final class SModelUtil {
 	
 	private new() {}
