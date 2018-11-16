@@ -61,7 +61,7 @@ class XtextTraceProvider implements ITraceProvider {
 		if (SModelElement.trace !== null) {
 			val trace = new XtextTrace(SModelElement.trace)
 			val path = uriExtensions.toUriString(trace.elementURI.trimFragment)
-			return callingServer.languageServerExtension.languageServerAccess.doRead(path) [ context |
+			return callingServer.diagramLanguageServer.languageServerAccess.doRead(path) [ context |
 				val element = context.resource.resourceSet.getEObject(trace.elementURI, true)
 				return readOperation.apply(element, context)
 			]

@@ -1,0 +1,126 @@
+/********************************************************************************
+ * Copyright (c) 2018 TypeFox and others.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * This Source Code may also be made available under the following Secondary
+ * Licenses when the conditions for such availability set forth in the Eclipse
+ * Public License v. 2.0 are satisfied: GNU General Public License, version 2
+ * with the GNU Classpath Exception which is available at
+ * https://www.gnu.org/software/classpath/license.html.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+ ********************************************************************************/
+
+package org.eclipse.sprotty.xtext.ls
+
+import com.google.inject.Inject
+import com.google.inject.Singleton
+import org.eclipse.lsp4j.InitializeParams
+import org.eclipse.lsp4j.TextDocumentPositionParams
+import org.eclipse.lsp4j.jsonrpc.Endpoint
+import org.eclipse.lsp4j.jsonrpc.services.ServiceEndpoints
+import org.eclipse.sprotty.ActionMessage
+import org.eclipse.sprotty.DiagramOptions
+import org.eclipse.sprotty.IDiagramServer
+import org.eclipse.sprotty.RequestModelAction
+import org.eclipse.sprotty.xtext.DiagramHighlightService
+import org.eclipse.sprotty.xtext.IDiagramServerFactory
+import org.eclipse.xtend.lib.annotations.Accessors
+import org.eclipse.xtext.ide.server.LanguageServerImpl
+import org.eclipse.xtext.ide.server.UriExtensions
+import org.eclipse.xtext.util.internal.Log
+
+/**
+ * An extended language server that adds diagram-related messages to the
+ * <a href="https://github.com/Microsoft/language-server-protocol">Language Server Protocol (LSP)</a>.
+ * 
+ * This class is instantiated by the ServerModule's container, i.e. it is independent of 
+ * the languages and diagram types in the language server. 
+ * 
+ * It uses {@link IDiagramServerFactory}s to instantiate language and diagramType specific 
+ * {@link IDiagramServer}s, a {@link DiagramServerManager} to manage these instances and
+ * a   
+ */
+@Log
+@Singleton
+class DiagramLanguageServer extends LanguageServerImpl implements DiagramServerEndpoint {
+	
+	@Inject extension UriExtensions
+	
+	@Inject
+	@Accessors(PUBLIC_GETTER)
+	DiagramServerManager diagramServerManager
+
+	@Inject
+	@Accessors(PUBLIC_GETTER)
+	DiagramUpdater diagramUpdater
+	
+	protected DiagramEndpoint _client 
+	
+	override initialize(InitializeParams params) {
+		super.initialize(params).thenApply[ result |
+			diagramUpdater.initialize(this)
+			diagramServerManager.initialize(this)
+			result
+		]
+	}
+	
+	override didClose(String clientId) {
+		diagramServerManager.removeDiagramServer(clientId)
+	}
+	
+	override accept(ActionMessage actionMessage) {
+		val diagramType = if (actionMessage.action instanceof RequestModelAction) 
+				(actionMessage.action as RequestModelAction).diagramType
+				?: (actionMessage.action as RequestModelAction).options.get(DiagramOptions.OPTION_DIAGRAM_TYPE)
+			else 
+			 	null
+		diagramServerManager
+			.getDiagramServer(diagramType, actionMessage.clientId)
+			?.accept(actionMessage)
+	}
+	
+	def DiagramEndpoint getClient() {
+		if (_client === null) {
+			val client = languageServerAccess.languageClient
+			if (client instanceof Endpoint) {
+				_client = ServiceEndpoints.toServiceObject(client, clientInterface)
+			}
+		}
+		return _client
+	}
+	
+	protected def Class<? extends DiagramEndpoint> getClientInterface() {
+		DiagramEndpoint
+	}
+	
+	
+	
+	override getLanguageServerAccess() {
+		super.languageServerAccess
+	}
+	
+	/**
+	 * Use documentHighlight to select element under cursor in the diagram.
+	 */
+	override documentHighlight(TextDocumentPositionParams params) {
+		val result = super.documentHighlight(params)
+		val uri = params.textDocument.uri.toUri
+		workspaceManager.doRead(uri) [ doc, resource |
+			val diagramHighlightService = languagesRegistry
+				.getResourceServiceProvider(uri)
+				.get(DiagramHighlightService)
+			val offset = doc.getOffSet(params.position)
+			diagramServerManager.findDiagramServersByUri(params.textDocument.uri).forEach [ server |
+				diagramHighlightService.selectElementFor(server, resource, offset)
+			]
+			null
+		]
+		result
+	}
+	
+}
+

@@ -13,12 +13,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-package org.eclipse.sprotty.xtext
+package org.eclipse.sprotty.xtext.ls
 
-import org.eclipse.sprotty.ActionMessage
 import java.util.function.Consumer
 import org.eclipse.lsp4j.jsonrpc.services.JsonNotification
 import org.eclipse.lsp4j.jsonrpc.services.JsonSegment
+import org.eclipse.sprotty.ActionMessage
 
 /**
  * LSP4J binding for diagram endpoints (sprotty client and server).

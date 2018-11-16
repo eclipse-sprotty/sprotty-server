@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2018 TypeFox and others.
+ * Copyright (c) 2018 TypeFox and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -12,25 +12,17 @@
  * https://www.gnu.org/software/classpath/license.html.
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
- ********************************************************************************/ 
-package org.eclipse.sprotty.xtext.ide
+ ********************************************************************************/
 
-import org.eclipse.sprotty.xtext.DiagramEndpoint
-import org.eclipse.lsp4j.Location
-import org.eclipse.lsp4j.jsonrpc.services.JsonNotification
-import org.eclipse.lsp4j.jsonrpc.services.JsonSegment
-import org.eclipse.xtend.lib.annotations.Data
+package org.eclipse.sprotty.xtext.testlanguage.diagram
 
-@JsonSegment('diagram')
-interface IdeDiagramClient extends DiagramEndpoint {
+import org.eclipse.sprotty.xtext.DiagramServerFactory
+
+class TestDiagramServerFactory extends DiagramServerFactory {
 	
-	@JsonNotification
-	def void openInTextEditor(OpenInTextEditorMessage message)
+	public static val DIAGRAM_TYPE = 'testDiagram'
 	
-}
-
-@Data
-class OpenInTextEditorMessage {
-	Location location
-	boolean forceOpen
+	override getDiagramTypes() {
+		#[DIAGRAM_TYPE]
+	}
 }

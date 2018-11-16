@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2018 TypeFox and others.
+ * Copyright (c) 2018 TypeFox and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,44 +13,37 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-package org.eclipse.sprotty.xtext.ide
+ 
+package org.eclipse.sprotty.xtext
 
 import com.google.inject.Inject
 import org.eclipse.sprotty.FitToScreenAction
 import org.eclipse.sprotty.SelectAction
 import org.eclipse.sprotty.SelectAllAction
-import org.eclipse.sprotty.xtext.DiagramLanguageServerExtension
 import org.eclipse.sprotty.xtext.tracing.ITraceProvider
 import org.eclipse.sprotty.xtext.tracing.TextRegionProvider
-import org.eclipse.xtext.ide.server.occurrences.DefaultDocumentHighlightService
 import org.eclipse.xtext.resource.XtextResource
 
-class IdeHighlightService extends DefaultDocumentHighlightService {
-
-	@Inject extension DiagramLanguageServerExtension
+class DiagramHighlightService {
 
 	@Inject extension TextRegionProvider
 
 	@Inject extension ITraceProvider
 
-	override getDocumentHighlights(XtextResource resource, int offset) {
-		val result = super.getDocumentHighlights(resource, offset)
-		findDiagramServersByUri(resource.getURI.toString).forEach [ server |
-			val element = resource.getElementAtOffset(offset)
-			val traceable = server.model.findSModelElement(element)
-			if (traceable !== null) {
-				server.dispatch(new SelectAllAction [
-					select = false
-				])
-				server.dispatch(new SelectAction [
-					selectedElementsIDs = #[traceable.id]
-				])
-				server.dispatch(new FitToScreenAction [
-					maxZoom = 1.0
-					elementIds = #[traceable.id]
-				])
-			}
-		]
-		return result
+	def void selectElementFor(ILanguageAwareDiagramServer server, XtextResource resource, int offset) {
+		val element = resource.getElementAtOffset(offset)
+		val traceable = server.model.findSModelElement(element)
+		if (traceable !== null) {
+			server.dispatch(new SelectAllAction [
+				select = false
+			])
+			server.dispatch(new SelectAction [
+				selectedElementsIDs = #[traceable.id]
+			])
+			server.dispatch(new FitToScreenAction [
+				maxZoom = 1.0
+				elementIds = #[traceable.id]
+			])
+		}
 	}
 }

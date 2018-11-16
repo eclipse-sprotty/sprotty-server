@@ -62,6 +62,8 @@ class RequestModelAction implements Action {
 	public static val KIND = 'requestModel'
 	String kind = KIND
 	
+	String diagramType
+	
 	Map<String, String> options
 	
 	new() {}

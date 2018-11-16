@@ -16,33 +16,31 @@
 package org.eclipse.sprotty.xtext
 
 import org.eclipse.sprotty.IDiagramExpansionListener
+import org.eclipse.sprotty.IDiagramOpenListener
 import org.eclipse.sprotty.IDiagramSelectionListener
 import org.eclipse.sprotty.IDiagramServer
 import org.eclipse.sprotty.ILayoutEngine
 import org.eclipse.sprotty.IModelUpdateListener
 import org.eclipse.sprotty.IPopupModelFactory
+import org.eclipse.sprotty.xtext.ls.DiagramServerManager
 import org.eclipse.sprotty.xtext.tracing.ITraceProvider
 import org.eclipse.sprotty.xtext.tracing.XtextTraceProvider
-import org.eclipse.xtext.ide.server.ILanguageServerExtension
 import org.eclipse.xtext.service.AbstractGenericModule
-import org.eclipse.sprotty.IDiagramOpenListener
 
 /**
- * Guice bindings for sprotty diagrams. Include this module in your Guice configuration in
- * order to support sprotty messages in the language server.
+ * Guice bindings for sprotty diagrams. 
+ * 
+ * Add a subclass of this module in the <code>createInjector()</code> method 
+ * of the IDE setup of your language.
  */
-class DefaultDiagramModule extends AbstractGenericModule {
-	
-	def Class<? extends ILanguageServerExtension> bindILanguageServerExtension() {
-		DiagramLanguageServerExtension
-	}
-	
-	def Class<? extends IDiagramServer.Provider> bindIDiagramServerProvider() {
-		DiagramLanguageServerExtension
-	}
+abstract class DefaultDiagramModule extends AbstractGenericModule {
 	
 	def Class<? extends IDiagramServer> bindIDiagramServer() {
 		LanguageAwareDiagramServer
+	}
+	
+	def bindIDiagramServerProvider() {
+		DiagramServerManager
 	}
 	
 	def Class<? extends ILayoutEngine> bindILayoutEngine() {
@@ -50,7 +48,7 @@ class DefaultDiagramModule extends AbstractGenericModule {
 	}
 	
 	def Class<? extends IPopupModelFactory> bindIPopupModelFactory() {
-		IPopupModelFactory.NullImpl
+		PopupModelFactory
 	}
 	
 	def Class<? extends IModelUpdateListener> bindIModelUpdateListener() {
@@ -58,18 +56,20 @@ class DefaultDiagramModule extends AbstractGenericModule {
 	}
 	
 	def Class<? extends IDiagramSelectionListener> bindIDiagramSelectionListener() {
-		IDiagramSelectionListener.NullImpl
-	}
-	
-	def Class<? extends IDiagramExpansionListener> bindIDiagramExpansionListener() {
-		IDiagramExpansionListener.NullImpl
+		DiagramSelectionListener
 	}
 	
 	def Class<? extends IDiagramOpenListener> bindIDiagramOpenListener() {
-		IDiagramOpenListener.NullImpl
+		DiagramOpenListener
+	}
+
+	def Class<? extends IDiagramExpansionListener> bindIDiagramExpansionListener() {
+		IDiagramExpansionListener.NullImpl
 	}
 	
 	def Class<? extends ITraceProvider> bindTraceProvider() {
 		XtextTraceProvider
 	}
+	
+	abstract def Class<? extends IDiagramServerFactory> bindIDiagramServerFactory();
 }

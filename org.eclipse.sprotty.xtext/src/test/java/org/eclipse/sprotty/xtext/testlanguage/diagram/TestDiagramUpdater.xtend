@@ -16,23 +16,19 @@
 package org.eclipse.sprotty.xtext.testlanguage.diagram
 
 import com.google.inject.Singleton
-import org.eclipse.sprotty.xtext.DiagramLanguageServerExtension
-import org.eclipse.sprotty.xtext.ILanguageAwareDiagramServer
 import java.util.HashMap
 import java.util.List
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import org.eclipse.sprotty.xtext.ILanguageAwareDiagramServer
+import org.eclipse.sprotty.xtext.ls.DiagramUpdater
 
 @Singleton
-class TestDiagramLanguageServerExtension extends DiagramLanguageServerExtension {
+class TestDiagramUpdater extends DiagramUpdater {
 	
 	// uri -> (number of updates, last update future)
 	val updateFutures = new HashMap<String, Pair<Integer, CompletableFuture<Void>>>
-	
-	override getDiagramServers() {
-		super.getDiagramServers()
-	}
 	
 	override protected doUpdateDiagrams(String path, List<? extends ILanguageAwareDiagramServer> diagramServers) {
 		val result = super.doUpdateDiagrams(path, diagramServers)

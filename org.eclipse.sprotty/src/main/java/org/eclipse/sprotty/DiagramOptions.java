@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2018 TypeFox and others.
+ * Copyright (c) 2018 TypeFox and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -12,24 +12,10 @@
  * https://www.gnu.org/software/classpath/license.html.
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
- ********************************************************************************/ 
+ ********************************************************************************/
+package org.eclipse.sprotty;
 
-package org.eclipse.sprotty.xtext
-
-import org.eclipse.sprotty.IDiagramServer
-import org.eclipse.sprotty.SModelRoot
-import org.eclipse.sprotty.xtext.ls.DiagramLanguageServer
-import org.eclipse.sprotty.xtext.ls.IssueProvider
-import org.eclipse.xtext.ide.server.ILanguageServerAccess
-
-interface ILanguageAwareDiagramServer extends IDiagramServer {
-	
-	def DiagramLanguageServer getDiagramLanguageServer()
-	
-	def String getSourceUri()
-	
-	def String getDiagramType()
-	
-	def SModelRoot generate(ILanguageServerAccess.Context context, IssueProvider issueProvider)
+public interface DiagramOptions {
+	String OPTION_SOURCE_URI = "sourceUri";
+	String OPTION_DIAGRAM_TYPE = "diagramType";
 }
-

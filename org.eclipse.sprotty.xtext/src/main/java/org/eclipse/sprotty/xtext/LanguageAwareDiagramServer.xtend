@@ -15,34 +15,93 @@
  ********************************************************************************/
 package org.eclipse.sprotty.xtext
 
+import com.google.inject.Inject
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.sprotty.DefaultDiagramServer
+import org.eclipse.sprotty.DiagramOptions
+import org.eclipse.sprotty.IDiagramServer
 import org.eclipse.sprotty.RequestModelAction
+import org.eclipse.sprotty.SModelRoot
+import org.eclipse.sprotty.ServerStatus
+import org.eclipse.sprotty.util.IdCache
+import org.eclipse.sprotty.xtext.ls.DiagramLanguageServer
+import org.eclipse.sprotty.xtext.ls.IssueProvider
 import org.eclipse.xtend.lib.annotations.Accessors
+import org.eclipse.xtext.diagnostics.Diagnostic
+import org.eclipse.xtext.diagnostics.Severity
+import org.eclipse.xtext.ide.server.ILanguageServerAccess
+import org.eclipse.xtext.ide.server.ILanguageServerAccess.Context
+
+import static org.eclipse.sprotty.ServerStatus.Severity.*
+import org.eclipse.sprotty.xtext.ls.DiagramUpdater
 
 /**
  * Diagram server for Xtext languages. When a {@link RequestModelAction} is received,
  * a diagram is generated for the corresponding resource by calling
- * {@link DiagramLanguageServerExtension#updateDiagram(LanguageAwareDiagramServer)}.
+ * {@link DiagramUpdater#updateDiagram(LanguageAwareDiagramServer)}.
  */
 class LanguageAwareDiagramServer extends DefaultDiagramServer implements ILanguageAwareDiagramServer {
 	
-	public static val OPTION_SOURCE_URI = 'sourceUri'
-	
 	@Accessors
-	DiagramLanguageServerExtension languageServerExtension
+	DiagramLanguageServer diagramLanguageServer
+	
+	@Accessors 
+	String diagramType
+	
+	@Inject com.google.inject.Provider<IDiagramGenerator> diagramGeneratorProvider
 	
 	override protected handle(RequestModelAction request) {
-		if (model.type == 'NONE' && languageServerExtension !== null) {
+		if (model.type == 'NONE' && diagramLanguageServer !== null) {
 			if (request.options !== null)
 				options = request.options
-			languageServerExtension.updateDiagram(this)
+			diagramLanguageServer.diagramUpdater.updateDiagram(this)
 		} else {
 			super.handle(request)
 		}
 	}
 	
 	override getSourceUri() {
-		options.get(OPTION_SOURCE_URI)
+		options.get(DiagramOptions.OPTION_SOURCE_URI)
 	}
 	
+	override SModelRoot generate(ILanguageServerAccess.Context context, IssueProvider issueProvider) {
+		val status = getServerStatus(context, issueProvider)
+		this.status = status
+		val root = if (shouldGenerate(status)) {
+			val generatorContext = createDiagramGeneratorContext(context, this, issueProvider)
+			val diagramGenerator = diagramGeneratorProvider.get
+			diagramGenerator.generate(generatorContext)
+		} else {
+			null
+		}
+		root
+	}
+
+	protected def ServerStatus getServerStatus(ILanguageServerAccess.Context context, IssueProvider issueProvider) {
+		if (context.resource === null)
+			return new ServerStatus(FATAL, 'Cannot update diagram: Model does not exist')
+		if (issueProvider.exists[
+			severity === Severity.ERROR 
+				&& (code == Diagnostic.LINKING_DIAGNOSTIC 
+				|| code == Diagnostic.SYNTAX_DIAGNOSTIC
+				|| code == Diagnostic.SYNTAX_DIAGNOSTIC_WITH_RANGE)]) 
+			return new ServerStatus(FATAL, 'Cannot update diagram: Model has syntax/linking errors')
+		val maxSeverity = issueProvider.maxSeverity
+		switch maxSeverity {
+			case Severity.ERROR:
+				return new ServerStatus(ERROR, 'Model has validation errors')
+			case Severity.WARNING: 
+				return new ServerStatus(WARNING, 'Model has warnings')
+			default:
+				return ServerStatus.OK
+		}
+	}
+	
+	protected def shouldGenerate(ServerStatus status) {
+		return status.severity !== FATAL
+	}
+	
+	protected def createDiagramGeneratorContext(Context context, IDiagramServer server, IssueProvider issueProvider) {
+		new IDiagramGenerator.Context(context.resource, server.diagramState, new IdCache<EObject>(), issueProvider, context.cancelChecker)
+	}
 }

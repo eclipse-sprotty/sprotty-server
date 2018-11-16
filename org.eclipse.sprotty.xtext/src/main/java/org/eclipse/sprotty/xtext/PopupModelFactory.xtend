@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
  
-package org.eclipse.sprotty.xtext.ide
+package org.eclipse.sprotty.xtext
 
 import com.google.inject.Inject
 import org.eclipse.emf.ecore.EObject
@@ -37,7 +37,7 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
  * 
  * Uses fontawesome for the icons representing the issues' severities.
  */
-class IdePopupModelFactory implements IPopupModelFactory {
+class PopupModelFactory implements IPopupModelFactory {
 
 	@Inject extension ITraceProvider
 	@Inject extension IEObjectDocumentationProvider
@@ -58,14 +58,15 @@ class IdePopupModelFactory implements IPopupModelFactory {
 					]
 					canvasBounds = request.bounds
 				]
-			} 
- 			SModelElement: {
+			}
+			case null:
+				null 
+ 			default: {
 				val future = element.withSource(server as ILanguageAwareDiagramServer) [ semanticElement, context |
 					createPopup(semanticElement, element, request)
 				]
 				future.get
 			} 
-			default: null
 		}
 	}
 	
