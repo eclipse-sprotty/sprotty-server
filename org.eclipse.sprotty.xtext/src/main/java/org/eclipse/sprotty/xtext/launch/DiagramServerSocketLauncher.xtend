@@ -30,13 +30,15 @@ abstract class DiagramServerSocketLauncher {
 
 	static val LOG = Logger.getLogger(DiagramServerSocketLauncher)
 
+	public static val int DEFAULT_PORT = 5008 
+
 	def run(String... args) {
 		try {
 			val setup = createSetup()
 			setup.setupLanguages
 			
 			val injector = Guice.createInjector(setup.languageServerModule)
-			val serverSocket = AsynchronousServerSocketChannel.open.bind(new InetSocketAddress("0.0.0.0", 5007))
+			val serverSocket = AsynchronousServerSocketChannel.open.bind(new InetSocketAddress("0.0.0.0", getPort(args)))
 	
 			while (true) {
 				val socketChannel = serverSocket.accept.get
@@ -55,6 +57,14 @@ abstract class DiagramServerSocketLauncher {
 		} catch (Throwable throwable) {
 			throwable.printStackTrace()
 		}
+	}
+	
+	protected def getPort(String... args) {
+		for(var i = 0; i < args.length - 1; i++) {
+			if (args.get(i) == '--port')
+				return Integer.parseInt(args.get(i+1))
+		}
+		return DEFAULT_PORT
 	}
 	
 	def abstract DiagramLanguageServerSetup createSetup()
