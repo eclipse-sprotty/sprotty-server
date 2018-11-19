@@ -42,7 +42,7 @@ import org.eclipse.xtext.util.internal.Log
  * 
  * It uses {@link IDiagramServerFactory}s to instantiate language and diagramType specific 
  * {@link IDiagramServer}s, a {@link DiagramServerManager} to manage these instances and
- * a   
+ * a {@link DiagramUpdater} to sync the diagram with model changes.
  */
 @Log
 @Singleton
