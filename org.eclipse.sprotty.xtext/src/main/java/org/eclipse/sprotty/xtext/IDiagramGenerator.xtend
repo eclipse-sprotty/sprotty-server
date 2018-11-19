@@ -15,17 +15,19 @@
  ********************************************************************************/
 package org.eclipse.sprotty.xtext
 
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.sprotty.IDiagramState
 import org.eclipse.sprotty.SModelRoot
 import org.eclipse.sprotty.util.IdCache
+import org.eclipse.sprotty.xtext.ls.IssueProvider
 import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtext.util.CancelIndicator
-import org.eclipse.emf.ecore.EObject
+import org.eclipse.sprotty.xtext.ls.DiagramLanguageServer
 
 /**
  * A diagram generator creates a sprotty model for a given resource. Bind your implementation in a subclass
- * of {@link DefaultDiagramModule} in order to include it in the {@link DiagramLanguageServerExtension}.
+ * of {@link DefaultDiagramModule} in order to include it in the {@link DiagramLanguageServer}.
  */
 interface IDiagramGenerator {
 
@@ -43,6 +45,4 @@ interface IDiagramGenerator {
 		IssueProvider issueProvider
 		CancelIndicator cancelIndicator
 	}
-
-	
 }

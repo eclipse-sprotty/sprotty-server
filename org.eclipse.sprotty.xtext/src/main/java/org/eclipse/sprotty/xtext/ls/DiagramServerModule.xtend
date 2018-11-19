@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2018 TypeFox and others.
+ * Copyright (c) 2018 TypeFox and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -12,24 +12,17 @@
  * https://www.gnu.org/software/classpath/license.html.
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
- ********************************************************************************/ 
-package org.eclipse.sprotty.xtext.ide
+ ********************************************************************************/
 
-import org.eclipse.sprotty.xtext.DiagramLanguageServerExtension
-import org.eclipse.lsp4j.jsonrpc.Endpoint
-import org.eclipse.lsp4j.jsonrpc.services.ServiceEndpoints
+package org.eclipse.sprotty.xtext.ls
 
-class IdeLanguageServerExtension extends DiagramLanguageServerExtension {
+import org.eclipse.xtext.ide.server.LanguageServerImpl
+import org.eclipse.xtext.service.AbstractGenericModule
 
-	IdeDiagramClient _client
-	
-	override protected IdeDiagramClient getClient() {
-		if (_client === null) {
-			val client = languageServerAccess.languageClient
-			if (client instanceof Endpoint) {
-				_client = ServiceEndpoints.toServiceObject(client, IdeDiagramClient)
-			}
-		}
-		return _client
-	}
+class DiagramServerModule extends AbstractGenericModule {
+
+	def Class<? extends LanguageServerImpl> bindLanguageServerImpl() {
+		DiagramLanguageServer
+	}  
 }
+

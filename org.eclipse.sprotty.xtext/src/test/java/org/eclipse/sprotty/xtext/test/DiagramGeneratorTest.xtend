@@ -15,9 +15,6 @@
  ********************************************************************************/
 package org.eclipse.sprotty.xtext.test
 
-import org.eclipse.sprotty.RequestModelAction
-import org.eclipse.sprotty.xtext.LanguageAwareDiagramServer
-import org.eclipse.sprotty.xtext.testlanguage.diagram.TestLanguageDiagramGenerator
 import java.util.HashMap
 import org.eclipse.lsp4j.DidChangeTextDocumentParams
 import org.eclipse.lsp4j.DidOpenTextDocumentParams
@@ -26,9 +23,13 @@ import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent
 import org.eclipse.lsp4j.TextDocumentItem
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier
+import org.eclipse.sprotty.DiagramOptions
+import org.eclipse.sprotty.RequestModelAction
+import org.eclipse.sprotty.xtext.testlanguage.diagram.TestLanguageDiagramGenerator
 import org.junit.Test
 
 import static org.junit.Assert.*
+import org.eclipse.sprotty.xtext.testlanguage.diagram.TestDiagramServerFactory
 
 class DiagramGeneratorTest extends AbstractDiagramServerTest {
 	
@@ -42,8 +43,9 @@ class DiagramGeneratorTest extends AbstractDiagramServerTest {
     	val diagramGenerator = getServiceProvider(sourceUri).get(TestLanguageDiagramGenerator)
     	assertTrue(diagramGenerator.results.empty)
     	action(new RequestModelAction[
+    		diagramType = TestDiagramServerFactory.DIAGRAM_TYPE
     		options = new HashMap => [
-    			put(LanguageAwareDiagramServer.OPTION_SOURCE_URI, sourceUri)
+    			put(DiagramOptions.OPTION_SOURCE_URI, sourceUri)
     		]
     	])
     	waitForUpdates(sourceUri, 1)
@@ -83,7 +85,7 @@ class DiagramGeneratorTest extends AbstractDiagramServerTest {
     	))
     	action(new RequestModelAction[
     		options = new HashMap => [
-    			put(LanguageAwareDiagramServer.OPTION_SOURCE_URI, sourceUri)
+    			put(DiagramOptions.OPTION_SOURCE_URI, sourceUri)
     		]
     	])
     	languageServer.didChange(new DidChangeTextDocumentParams(

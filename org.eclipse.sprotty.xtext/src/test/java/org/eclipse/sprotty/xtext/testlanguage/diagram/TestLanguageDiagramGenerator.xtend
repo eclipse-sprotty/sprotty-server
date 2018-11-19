@@ -19,12 +19,12 @@ import com.google.inject.Singleton
 import java.util.List
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.sprotty.DiagramOptions
 import org.eclipse.sprotty.IDiagramState
 import org.eclipse.sprotty.SGraph
 import org.eclipse.sprotty.SModelRoot
 import org.eclipse.sprotty.SNode
 import org.eclipse.sprotty.xtext.IDiagramGenerator
-import org.eclipse.sprotty.xtext.LanguageAwareDiagramServer
 import org.eclipse.sprotty.xtext.testlanguage.testLanguage.Model
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.Data
@@ -48,7 +48,7 @@ class TestLanguageDiagramGenerator implements IDiagramGenerator {
 		}
 		
 		private def printOption(String key, String value) {
-			if (key == LanguageAwareDiagramServer.OPTION_SOURCE_URI)
+			if (key == DiagramOptions.OPTION_SOURCE_URI)
 				'''«key»: «URI.createURI(value).lastSegment»'''
 			else
 				'''«key»: «value»'''

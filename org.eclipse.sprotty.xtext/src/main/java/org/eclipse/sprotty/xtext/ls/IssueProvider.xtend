@@ -14,17 +14,18 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
  
-package org.eclipse.sprotty.xtext
+package org.eclipse.sprotty.xtext.ls
 
 import com.google.common.collect.Multimap
 import com.google.common.collect.Multimaps
 import java.util.List
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
-import org.eclipse.xtext.validation.Issue
-import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import org.eclipse.xtext.diagnostics.Severity
 import org.eclipse.xtext.diagnostics.Diagnostic
+import org.eclipse.xtext.diagnostics.Severity
+import org.eclipse.xtext.validation.Issue
+
+import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 
 /**
  * Efficiently provides issues per model element.
@@ -41,7 +42,10 @@ class IssueProvider {
 	}
 	
 	def Severity getMaxSeverity() {
-		map.values.map[severity].minBy[ordinal]
+		if (hasIssues) 
+			map.values.map[severity].minBy[ordinal]
+		else
+			null 
 	}
 	
 	def hasLinkingOrSyntaxErrors() {
@@ -51,5 +55,13 @@ class IssueProvider {
 				|| code == Diagnostic.SYNTAX_DIAGNOSTIC
 				|| code == Diagnostic.SYNTAX_DIAGNOSTIC_WITH_RANGE)
 		]
+	}
+	
+	def boolean hasIssues() {
+		!map.empty
+	}
+	
+	def exists((Issue)=>boolean predicate) {
+		map.values.exists(predicate)
 	}
 }

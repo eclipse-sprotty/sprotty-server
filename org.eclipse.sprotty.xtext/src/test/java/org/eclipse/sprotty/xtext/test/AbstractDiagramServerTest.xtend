@@ -18,10 +18,14 @@ package org.eclipse.sprotty.xtext.test
 import com.google.inject.Inject
 import org.eclipse.sprotty.Action
 import org.eclipse.sprotty.ActionMessage
-import org.eclipse.sprotty.xtext.testlanguage.diagram.TestDiagramLanguageServerExtension
+import org.eclipse.sprotty.xtext.ls.DiagramServerModule
+import org.eclipse.sprotty.xtext.ls.DiagramUpdater
+import org.eclipse.sprotty.xtext.testlanguage.diagram.TestDiagramUpdater
 import org.eclipse.sprotty.xtext.testlanguage.diagram.TestLanguageDiagramGenerator
 import org.eclipse.xtext.ide.server.UriExtensions
 import org.eclipse.xtext.testing.AbstractLanguageServerTest
+import org.eclipse.xtext.util.Modules2
+import org.eclipse.sprotty.xtext.ls.DiagramLanguageServer
 
 abstract class AbstractDiagramServerTest extends AbstractLanguageServerTest {
 	
@@ -31,8 +35,16 @@ abstract class AbstractDiagramServerTest extends AbstractLanguageServerTest {
 	
 	@Inject extension UriExtensions
 	
+	@Inject DiagramUpdater diagramUpdater
+	
 	new() {
 		super('testlang')
+	}
+	
+	override protected getServerModule() {
+		Modules2.mixin(super.serverModule, new DiagramServerModule, [
+			bind(DiagramUpdater).to(TestDiagramUpdater)
+		])
 	}
 	
 	protected def getServiceProvider(String uri) {
@@ -40,11 +52,11 @@ abstract class AbstractDiagramServerTest extends AbstractLanguageServerTest {
 	}
 	
 	protected def void action(Action action) {
-		languageServer.notify('diagram/accept', new ActionMessage(CLIENT_ID, action))
+		(languageServer as DiagramLanguageServer).accept(new ActionMessage(CLIENT_ID, action))
 	}
 	
 	protected def void closeDiagram() {
-		languageServer.notify('diagram/didClose', CLIENT_ID)
+		(languageServer as DiagramLanguageServer).didClose(CLIENT_ID)
 	}
 	
 	protected def void assertGenerated(CharSequence expectedResult) {
@@ -53,8 +65,7 @@ abstract class AbstractDiagramServerTest extends AbstractLanguageServerTest {
 	}
 	
 	protected def void waitForUpdates(String uri, int count) {
-		val diagramExtension = getServiceProvider('file:/dummy.testlang').get(TestDiagramLanguageServerExtension)
-		diagramExtension.waitForUpdates(uri, count, WAIT_TIMEOUT)
+		(diagramUpdater as TestDiagramUpdater).waitForUpdates(uri, count, WAIT_TIMEOUT)
 	}
 	
 }
