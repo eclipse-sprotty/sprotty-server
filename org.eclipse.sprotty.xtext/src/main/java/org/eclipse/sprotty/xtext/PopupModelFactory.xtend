@@ -95,7 +95,7 @@ class PopupModelFactory implements IPopupModelFactory {
 	protected def createPopup(EObject semanticElement, SModelElement element, RequestPopupModelAction request) {
 		val popupId = element.id + '-popup'
 		val title = getTitle(semanticElement)
-		val issueMarker = element.children.filter(SIssueMarker).head
+		val issueMarker = element.children?.filter(SIssueMarker)?.head
 		val docs = semanticElement.documentation
 		if (title === null && issueMarker === null && docs === null)
 			return null
