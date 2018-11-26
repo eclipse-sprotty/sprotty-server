@@ -34,7 +34,7 @@ class IssueProvider {
 	val Multimap<URI, Issue> map
 
 	new(List<Issue> issues) {
-		map = Multimaps.index(issues, [uriToProblem])
+		map = Multimaps.index(issues.filter[uriToProblem !== null], [uriToProblem])
 	}
 
 	def Iterable<? extends Issue>getIssues(EObject element) {
