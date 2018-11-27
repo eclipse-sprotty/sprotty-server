@@ -32,6 +32,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.ide.server.LanguageServerImpl
 import org.eclipse.xtext.ide.server.UriExtensions
 import org.eclipse.xtext.util.internal.Log
+import org.eclipse.emf.common.util.URI
 
 /**
  * An extended language server that adds diagram-related messages to the
@@ -108,19 +109,18 @@ class DiagramLanguageServer extends LanguageServerImpl implements DiagramServerE
 	 */
 	override documentHighlight(TextDocumentPositionParams params) {
 		val result = super.documentHighlight(params)
-		val uri = params.textDocument.uri.toUri
+		val URI uri = params.textDocument.uri.toUri
 		workspaceManager.doRead(uri) [ doc, resource |
 			val diagramHighlightService = languagesRegistry
 				.getResourceServiceProvider(uri)
 				.get(DiagramHighlightService)
 			val offset = doc.getOffSet(params.position)
-			diagramServerManager.findDiagramServersByUri(params.textDocument.uri).forEach [ server |
+			diagramServerManager.findDiagramServersByUri(uri.toString).forEach [ server |
 				diagramHighlightService.selectElementFor(server, resource, offset)
 			]
 			null
 		]
 		result
 	}
-	
 }
 
