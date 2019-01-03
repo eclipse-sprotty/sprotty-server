@@ -48,6 +48,7 @@ import com.google.common.collect.Maps;
 
 import org.eclipse.sprotty.BoundsAware;
 import org.eclipse.sprotty.Dimension;
+import org.eclipse.sprotty.EdgeLayoutable;
 import org.eclipse.sprotty.Layouting;
 import org.eclipse.sprotty.Point;
 import org.eclipse.sprotty.SEdge;
@@ -196,7 +197,8 @@ public class ElkLayoutEngine implements ILayoutEngine {
 			String layout = ((Layouting) sParent).getLayout();
 			if (layout != null && !layout.isEmpty())
 				return false;
-		}
+		} else if (element instanceof EdgeLayoutable && ((EdgeLayoutable)element).getEdgePlacement() != null)
+			return false; 
 		return true;
 	}
 	

@@ -114,3 +114,11 @@ interface Layouting {
 	def String getLayout()
 	def LayoutOptions getLayoutOptions()
 }
+
+/**
+ * Used to place a child relative to its parent edge.
+ */
+ interface EdgeLayoutable {
+ 	def EdgePlacement getEdgePlacement()
+ 	def void setEdgePlacement(EdgePlacement edgePlacement)  
+ }

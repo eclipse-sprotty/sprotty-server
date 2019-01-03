@@ -97,8 +97,9 @@ abstract class SShapeElement extends SModelElement implements BoundsAware {
  */
 @Accessors
 @ToString(skipNulls = true)
-class SNode extends SShapeElement implements Layouting {
+class SNode extends SShapeElement implements Layouting, EdgeLayoutable  {
 	String layout
+	EdgePlacement edgePlacement
 	
 	new() {
 		type = 'node'
@@ -150,9 +151,10 @@ class SEdge extends SModelElement {
  */
 @Accessors
 @ToString(skipNulls = true)
-class SLabel extends SShapeElement implements Alignable {
+class SLabel extends SShapeElement implements Alignable, EdgeLayoutable {
 	String text
 	Point alignment
+	EdgePlacement edgePlacement
 	
 	new() {
 		type = 'label'
@@ -222,6 +224,47 @@ class LayoutOptions {
 	
 	new(Consumer<LayoutOptions> initializer) {
 		initializer.accept(this)
+	}
+}
+
+/**
+ * Options for client-side edge layout. Used to place and rotate child elements of edges.
+ */
+@Accessors
+@ToString(skipNulls = true)
+class EdgePlacement {
+	enum Side { left, right, top, bottom, on }
+	
+	/**
+	 * A value between 0 (source) and 1 (target) describing the position along the edge.
+	 */
+	Double position	
+	
+	/**
+	 * Offset of the element to the edge in pixels
+	 */
+	Double offset	
+	
+	/**
+	 * Where to place the element relative to the edges direction. 
+	 */
+	@Accessors(PUBLIC_GETTER)
+	String side
+	
+	/**
+	 * Whether to rotate the element such that it is tangential to the edge or not.
+	 * Defaults to true.
+	 */
+	Boolean rotate
+	
+	new() {}
+	
+	new(Consumer<EdgePlacement> initializer) {
+		initializer.accept(this)
+	}
+	
+	def setSide(Side side) {
+		this.side = side.toString
 	}
 }
 
