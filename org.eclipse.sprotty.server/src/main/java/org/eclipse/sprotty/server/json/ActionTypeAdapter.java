@@ -32,6 +32,7 @@ import org.eclipse.sprotty.CollapseExpandAllAction;
 import org.eclipse.sprotty.ComputedBoundsAction;
 import org.eclipse.sprotty.ExportSvgAction;
 import org.eclipse.sprotty.FitToScreenAction;
+import org.eclipse.sprotty.LayoutAction;
 import org.eclipse.sprotty.OpenAction;
 import org.eclipse.sprotty.RequestBoundsAction;
 import org.eclipse.sprotty.RequestExportSvgAction;
@@ -73,23 +74,24 @@ public class ActionTypeAdapter extends PropertyBasedTypeAdapter<Action> {
 		}
 		
 		protected void addDefaultActionKinds() {
-			addActionKind(RequestModelAction.KIND, RequestModelAction.class);
-			addActionKind(SetModelAction.KIND, SetModelAction.class);
-			addActionKind(UpdateModelAction.KIND, UpdateModelAction.class);
-			addActionKind(RequestBoundsAction.KIND, RequestBoundsAction.class);
-			addActionKind(ComputedBoundsAction.KIND, ComputedBoundsAction.class);
-			addActionKind(SetBoundsAction.KIND, SetBoundsAction.class);
-			addActionKind(SelectAction.KIND, SelectAction.class);
-			addActionKind(SelectAllAction.KIND, SelectAllAction.class);
 			addActionKind(CenterAction.KIND, CenterAction.class);
-			addActionKind(FitToScreenAction.KIND, FitToScreenAction.class);
-			addActionKind(RequestPopupModelAction.KIND, RequestPopupModelAction.class);
-			addActionKind(SetPopupModelAction.KIND, SetPopupModelAction.class);
 			addActionKind(CollapseExpandAction.KIND, CollapseExpandAction.class);
 			addActionKind(CollapseExpandAllAction.KIND, CollapseExpandAllAction.class);
-			addActionKind(OpenAction.KIND, OpenAction.class);
-			addActionKind(RequestExportSvgAction.KIND, RequestExportSvgAction.class);
+			addActionKind(ComputedBoundsAction.KIND, ComputedBoundsAction.class);
 			addActionKind(ExportSvgAction.KIND, ExportSvgAction.class);
+			addActionKind(FitToScreenAction.KIND, FitToScreenAction.class);
+			addActionKind(LayoutAction.KIND, LayoutAction.class);
+			addActionKind(OpenAction.KIND, OpenAction.class);
+			addActionKind(RequestBoundsAction.KIND, RequestBoundsAction.class);
+			addActionKind(RequestExportSvgAction.KIND, RequestExportSvgAction.class);
+			addActionKind(RequestModelAction.KIND, RequestModelAction.class);
+			addActionKind(RequestPopupModelAction.KIND, RequestPopupModelAction.class);
+			addActionKind(SelectAction.KIND, SelectAction.class);
+			addActionKind(SelectAllAction.KIND, SelectAllAction.class);
+			addActionKind(SetBoundsAction.KIND, SetBoundsAction.class);
+			addActionKind(SetModelAction.KIND, SetModelAction.class);
+			addActionKind(SetPopupModelAction.KIND, SetPopupModelAction.class);
+			addActionKind(UpdateModelAction.KIND, UpdateModelAction.class);
 		}
 		
 		public void addActionKind(String kind, Class<? extends Action> clazz) {

@@ -399,6 +399,11 @@ class OpenAction implements Action {
 	}
 }
 
+/**
+ * Request an SVG export of the diagram.
+ * 
+ * Usually processed on the client who answers with an <code>ExportSvgAction</code>
+ */
 @Accessors
 @EqualsHashCode
 @ToString(skipNulls = true)
@@ -412,6 +417,11 @@ class RequestExportSvgAction implements Action {
 	}
 }
 
+/**
+ * Answer to a <code>RequestExportSvgAction</code>.
+ * 
+ * Contains the SVG for the diagram in the <code>svg</code> property.
+ */
 @Accessors
 @EqualsHashCode
 @ToString(skipNulls = true)
@@ -426,6 +436,9 @@ class ExportSvgAction implements Action {
 	}
 }
 
+/**
+ * Reports the status of the server to the client.
+ */
 @Accessors
 @EqualsHashCode
 @ToString(skipNulls = true)
@@ -443,4 +456,18 @@ class ServerStatusAction implements Action {
 		this.severity = status.severity.toString
 		this.message = status.message
 	}
+}
+
+/**
+ * Requests an auto layout, to align nodes and edges. 
+ * 
+ * Can be processed on the client as well as on the server, depending on the 
+ * auto-layout mechanism in use. 
+ */
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls=true)
+class LayoutAction implements Action {
+	public static val KIND = 'layout'
+	String kind = KIND
 }
