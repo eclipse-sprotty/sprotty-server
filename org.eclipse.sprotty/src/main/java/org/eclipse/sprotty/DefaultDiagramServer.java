@@ -51,7 +51,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 	
 	private boolean needsClientLayout = true;
 	
-	private boolean needsServerLayout = false;
+	private ServerLayoutKind serverLayoutKind = ServerLayoutKind.AUTOMATIC;
 	
 	private Set<String> expandedElements = new HashSet<>();
 
@@ -185,7 +185,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 				// Assume that the current model has been modified in-place
 				newRoot = currentRoot;
 			} else {
-				if (needsServerLayout(newRoot)) {
+				if (getServerLayoutKind(newRoot) == ServerLayoutKind.AUTOMATIC) {
 					LayoutUtil.copyLayoutData(currentRoot, newRoot);
 				}
 				currentRoot = newRoot;
@@ -233,20 +233,20 @@ public class DefaultDiagramServer implements IDiagramServer {
 	}
 	
 	/**
-	 * Whether the server needs to compute the layout of parts of the model. The layout is computed with
-	 * the layout engine configured with {@link #setLayoutEngine(ILayoutEngine)}, so returning {@code true}
+	 * Whether and when the server needs to compute the layout of parts of the model. The layout is computed 
+	 * with the layout engine configured with {@link #setLayoutEngine(ILayoutEngine)}, so returning {@code true}
 	 * here makes sense only if such an engine is available.
 	 * 
 	 * <p>The default implementation returns the value configured with {@link #setNeedsServerLayout(boolean)},
 	 * but this can be overridden to determine the value depending on the given model. The initial value
 	 * is {@code false}.</p>
 	 */
-	protected boolean needsServerLayout(SModelRoot root) {
-		return needsServerLayout;
+	protected ServerLayoutKind getServerLayoutKind(SModelRoot root) {
+		return this.serverLayoutKind;
 	}
 	
-	public void setNeedsServerLayout(boolean value) {
-		this.needsServerLayout = value;
+	public void setServerLayoutKind(ServerLayoutKind value) {
+		this.serverLayoutKind = value;
 	}
 	
 	/**
@@ -258,7 +258,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 		if (needsClientLayout(newRoot)) {
 			dispatch(new RequestBoundsAction(newRoot));
 			IModelUpdateListener listener = getModelUpdateListener();
-			if (!needsServerLayout(newRoot) && listener != null) {
+			if (getServerLayoutKind(newRoot) == ServerLayoutKind.NONE && listener != null) {
 				// In this case the client won't send us the computed bounds, so we trigger the listener immediately
 				listener.modelSubmitted(newRoot, this);
 			}
@@ -268,7 +268,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 	}
 	
 	private void doSubmitModel(SModelRoot newRoot, boolean update) {
-		if (needsServerLayout(newRoot)) {
+		if (getServerLayoutKind(newRoot) == ServerLayoutKind.AUTOMATIC) {
 			ILayoutEngine layoutEngine = getLayoutEngine();
 			if (layoutEngine != null) {
 				layoutEngine.layout(newRoot);
@@ -325,6 +325,9 @@ public class DefaultDiagramServer implements IDiagramServer {
 				break;
 			case OpenAction.KIND:
 				handle((OpenAction) action);
+				break;
+			case LayoutAction.KIND:
+				handle((LayoutAction) action);
 				break;
 		}
 	}
@@ -443,6 +446,19 @@ public class DefaultDiagramServer implements IDiagramServer {
 		if (openListener != null) {
 			openListener.elementOpened(action, this);
 		}
+	}
+	
+	/**
+	 * Called when a {@link LayoutAction} is received.
+	 */
+	protected void handle(LayoutAction action) {
+		if (getServerLayoutKind(currentRoot) == ServerLayoutKind.MANUAL) {
+			ILayoutEngine layoutEngine = getLayoutEngine();
+			if (layoutEngine != null) {
+				layoutEngine.layout(currentRoot);
+			}
+		}
+		doSubmitModel(currentRoot, true);
 	}
 	
 	public static class DefaultDiagramState implements IDiagramState {
