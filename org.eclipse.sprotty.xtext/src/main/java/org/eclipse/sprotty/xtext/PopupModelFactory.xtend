@@ -89,7 +89,6 @@ class PopupModelFactory implements IPopupModelFactory {
 			case 'warning': 'fa-exclamation-circle'
 			case 'info': 'fa-info-circle'
 		}
-		
 	}
 
 	protected def createPopup(EObject semanticElement, SModelElement element, RequestPopupModelAction request) {
@@ -128,7 +127,14 @@ class PopupModelFactory implements IPopupModelFactory {
 	}
 	
 	protected def String getTitle(EObject semanticElement) {
-		qualifiedNameConverter.toString(semanticElement.fullyQualifiedName) + ' (' + semanticElement.eClass.name + ')'
+		getDisplayName(semanticElement) + ' (' + semanticElement.eClass.name + ')'
 	}
 	
+	protected def String getDisplayName(EObject semanticElement) {
+		val qualifiedName = semanticElement.fullyQualifiedName
+		if (qualifiedName !== null)
+			qualifiedNameConverter.toString(qualifiedName) 
+		else 
+		 	'<unnamed>'
+	}
 }
