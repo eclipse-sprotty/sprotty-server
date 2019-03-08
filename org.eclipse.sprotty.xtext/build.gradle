@@ -36,7 +36,7 @@ configurations {
 	testRuntimeClasspath.resolutionStrategy {
 		eachDependency {
 			if (requested.group == 'com.google.inject' && requested.name == 'guice')
-				useVersion('4.1.0')
+				useVersion(versions.guice)
 		}
 	}
 }
