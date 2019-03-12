@@ -63,7 +63,7 @@ class PopupModelFactory implements IPopupModelFactory {
 				null 
  			default: {
 				val future = element.withSource(server as ILanguageAwareDiagramServer) [ semanticElement, context |
-					createPopup(semanticElement, element, request)
+					semanticElement?.createPopup(element, request) ?: null
 				]
 				future.get
 			} 
