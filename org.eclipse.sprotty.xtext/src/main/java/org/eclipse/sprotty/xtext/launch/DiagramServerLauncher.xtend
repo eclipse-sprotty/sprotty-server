@@ -68,7 +68,7 @@ abstract class DiagramServerLauncher extends ServerLauncher {
 	
 	def createLauncher(LaunchArgs it) {
 		val executorService = Executors.newCachedThreadPool
-		Launcher.createIoLauncher(languageServer, LanguageClient, in, out, executorService,
+		Launcher.createIoLauncher(languageServer, setup.languageClientClass, in, out, executorService,
 				wrapper, [setup.configureGson(it)])
 	}
 
@@ -88,7 +88,7 @@ abstract class DiagramServerLauncher extends ServerLauncher {
 			Thread.sleep(10_000l)
 		}
 	}
-		
+
 	private def Function<MessageConsumer, MessageConsumer> getWrapper(LaunchArgs args) {
 		[ consumer |
 			var result = consumer

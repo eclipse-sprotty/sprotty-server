@@ -18,11 +18,12 @@ package org.eclipse.sprotty.xtext.launch
 
 import com.google.gson.GsonBuilder
 import com.google.inject.Module
+import org.eclipse.lsp4j.services.LanguageClient
 import org.eclipse.sprotty.server.json.ActionTypeAdapter
 import org.eclipse.sprotty.server.json.EnumTypeAdapter
 import org.eclipse.sprotty.xtext.ls.DiagramServerModule
-import org.eclipse.xtext.util.Modules2
 import org.eclipse.xtext.ide.server.ServerModule
+import org.eclipse.xtext.util.Modules2
 
 abstract class DiagramLanguageServerSetup {
 	
@@ -42,4 +43,9 @@ abstract class DiagramLanguageServerSetup {
 			new DiagramServerModule
 		) 
 	}
+	
+	def Class<? extends LanguageClient> getLanguageClientClass() {
+		return LanguageClient
+	}
+
 }
