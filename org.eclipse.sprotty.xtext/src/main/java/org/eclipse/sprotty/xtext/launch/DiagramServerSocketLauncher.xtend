@@ -23,23 +23,22 @@ import java.nio.channels.Channels
 import java.util.concurrent.Executors
 import org.apache.log4j.Logger
 import org.eclipse.lsp4j.jsonrpc.Launcher
-import org.eclipse.lsp4j.services.LanguageClient
 import org.eclipse.xtext.ide.server.LanguageServerImpl
 
 abstract class DiagramServerSocketLauncher {
 
 	static val LOG = Logger.getLogger(DiagramServerSocketLauncher)
 
-	public static val int DEFAULT_PORT = 5008 
+	public static val int DEFAULT_PORT = 5008
 
 	def run(String... args) {
 		try {
 			val setup = createSetup()
 			setup.setupLanguages
-			
+
 			val injector = Guice.createInjector(setup.languageServerModule)
 			val serverSocket = AsynchronousServerSocketChannel.open.bind(new InetSocketAddress("0.0.0.0", getPort(args)))
-	
+
 			while (true) {
 				val socketChannel = serverSocket.accept.get
 				val in = Channels.newInputStream(socketChannel)
@@ -47,7 +46,7 @@ abstract class DiagramServerSocketLauncher {
 				val languageServer = injector.getInstance(LanguageServerImpl)
 				val executorService = Executors.newCachedThreadPool
 				val launcher = Launcher.createIoLauncher(
-					languageServer, LanguageClient, 
+					languageServer, setup.languageClientClass,
 					in, out, executorService,
 					[it], [setup.configureGson(it)])
 				languageServer.connect(launcher.remoteProxy)
@@ -58,7 +57,7 @@ abstract class DiagramServerSocketLauncher {
 			throwable.printStackTrace()
 		}
 	}
-	
+
 	protected def getPort(String... args) {
 		for(var i = 0; i < args.length - 1; i++) {
 			if (args.get(i) == '--port')
@@ -66,6 +65,7 @@ abstract class DiagramServerSocketLauncher {
 		}
 		return DEFAULT_PORT
 	}
-	
+
 	def abstract DiagramLanguageServerSetup createSetup()
+
 }
