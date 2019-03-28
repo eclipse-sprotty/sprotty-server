@@ -33,6 +33,7 @@ import org.eclipse.xtext.ide.server.LanguageServerImpl
 import org.eclipse.xtext.ide.server.UriExtensions
 import org.eclipse.xtext.util.internal.Log
 import org.eclipse.emf.common.util.URI
+import org.eclipse.lsp4j.VersionedTextDocumentIdentifier
 
 /**
  * An extended language server that adds diagram-related messages to the
@@ -111,13 +112,24 @@ class DiagramLanguageServer extends LanguageServerImpl implements DiagramServerE
 		val result = super.documentHighlight(params)
 		val URI uri = params.textDocument.uri.toUri
 		workspaceManager.doRead(uri) [ doc, resource |
-			val diagramHighlightService = languagesRegistry
-				.getResourceServiceProvider(uri)
-				.get(DiagramHighlightService)
-			val offset = doc.getOffSet(params.position)
-			diagramServerManager.findDiagramServersByUri(uri.toString).forEach [ server |
-				diagramHighlightService.selectElementFor(server, resource, offset)
-			]
+			if (params.textDocument instanceof VersionedTextDocumentIdentifier) {
+				val version = (params.textDocument as VersionedTextDocumentIdentifier).version
+				if (version !== null && version !== doc.version)
+					return null
+			}
+			try {
+				val diagramHighlightService = languagesRegistry
+					.getResourceServiceProvider(uri)
+					.get(DiagramHighlightService)
+				if (diagramHighlightService !== null) {
+					val offset = doc.getOffSet(params.position)
+					diagramServerManager.findDiagramServersByUri(uri.toString).forEach [ server |
+						diagramHighlightService.selectElementFor(server, resource, offset)
+					]
+				}
+			} catch (Exception exc) {
+				LOG.warn('Highlighting diagram element failed', exc)
+			}
 			null
 		]
 		result
