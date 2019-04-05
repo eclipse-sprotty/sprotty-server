@@ -38,17 +38,17 @@ import com.google.inject.Singleton
 @Singleton
 class DiagramUpdater {
 
-	//@Inject 
-	DiagramLanguageServer languageServer 
+	//@Inject
+	protected DiagramLanguageServer languageServer
 
-	@Inject 
-	@Accessors(PROTECTED_GETTER) 
+	@Inject
+	@Accessors(PROTECTED_GETTER)
 	IResourceServiceProvider.Registry resourceServiceProviderRegistry
 
 	@Inject extension UriExtensions
 
 	DeferredDiagramUpdater updater
-	
+
 	def void initialize(DiagramLanguageServer languageServer) {
 		this.languageServer = languageServer
 		updater = new DeferredDiagramUpdater([it | doUpdateDiagrams(it)])
@@ -75,18 +75,18 @@ class DiagramUpdater {
 			val diagramServers = languageServer.diagramServerManager.findDiagramServersByUri(path)
 			if (!diagramServers.empty) {
 				futures += doUpdateDiagrams(path, diagramServers)
-			} 
+			}
 		}
 		return if (futures.empty)
 				CompletableFuture.completedFuture(null)
 			else
 				CompletableFuture.allOf(futures)
 	}
-	
+
 	protected def CompletableFuture<Void> doUpdateDiagrams(String path, List<? extends ILanguageAwareDiagramServer> diagramServers) {
 		languageServer.languageServerAccess.doRead(path) [ context |
 			val issueProvider = validate(context)
-			diagramServers.forEach [ 
+			diagramServers.forEach [
 				val root = generate(context, issueProvider)
 				if (root !== null)
 					updateModel(root)
@@ -94,7 +94,7 @@ class DiagramUpdater {
 			null
 		]
 	}
-	
+
 	protected def IssueProvider validate(ILanguageServerAccess.Context context) {
 		if (context.resource === null)
 			return null
@@ -107,41 +107,40 @@ class DiagramUpdater {
 }
 
 class DeferredDiagramUpdater {
-	
+
 	Timer currentTimer
-	
+
 	val uris = new LinkedBlockingQueue<URI>
-	
+
 	val lock = new Object
 
-	val (Set<? extends URI>)=>void updateFunction 
-	
+	val (Set<? extends URI>)=>void updateFunction
+
 	new((Set<? extends URI>)=>void updateFunction) {
 		this.updateFunction = updateFunction
 	}
-	
+
 	def void updateLater(Collection<? extends URI> newUris) {
 		uris.addAll(newUris)
 		schedule(200)
 	}
-	
+
 	protected def void schedule(long delay) {
 		synchronized(lock) {
 			if(currentTimer !== null)
 				currentTimer.cancel
-			currentTimer = new Timer('Diagram updater', true)	
+			currentTimer = new Timer('Diagram updater', true)
 			currentTimer.schedule(createTimerTask, delay)
 		}
 	}
-	
+
 	protected def TimerTask createTimerTask() {
 		[ this.update() ]
 	}
-	
+
 	protected def void update() {
 		val processUris = <URI>newHashSet
 		uris.drainTo(processUris)
 		updateFunction.apply(processUris)
 	}
 }
-
