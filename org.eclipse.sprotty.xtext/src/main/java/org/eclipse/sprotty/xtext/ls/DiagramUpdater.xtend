@@ -38,8 +38,8 @@ import com.google.inject.Singleton
 @Singleton
 class DiagramUpdater {
 
-	//@Inject
-	protected DiagramLanguageServer languageServer
+	@Accessors(PROTECTED_GETTER)
+	DiagramLanguageServer languageServer
 
 	@Inject
 	@Accessors(PROTECTED_GETTER)
