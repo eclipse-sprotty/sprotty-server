@@ -18,14 +18,16 @@ package org.eclipse.sprotty.xtext.test
 import com.google.inject.Inject
 import org.eclipse.sprotty.Action
 import org.eclipse.sprotty.ActionMessage
+import org.eclipse.sprotty.xtext.ls.DiagramLanguageServer
+import org.eclipse.sprotty.xtext.ls.DiagramServerManager
 import org.eclipse.sprotty.xtext.ls.DiagramServerModule
 import org.eclipse.sprotty.xtext.ls.DiagramUpdater
+import org.eclipse.sprotty.xtext.ls.IDiagramServerManager
 import org.eclipse.sprotty.xtext.testlanguage.diagram.TestDiagramUpdater
 import org.eclipse.sprotty.xtext.testlanguage.diagram.TestLanguageDiagramGenerator
 import org.eclipse.xtext.ide.server.UriExtensions
 import org.eclipse.xtext.testing.AbstractLanguageServerTest
 import org.eclipse.xtext.util.Modules2
-import org.eclipse.sprotty.xtext.ls.DiagramLanguageServer
 
 abstract class AbstractDiagramServerTest extends AbstractLanguageServerTest {
 	
@@ -44,6 +46,7 @@ abstract class AbstractDiagramServerTest extends AbstractLanguageServerTest {
 	override protected getServerModule() {
 		Modules2.mixin(super.serverModule, new DiagramServerModule, [
 			bind(DiagramUpdater).to(TestDiagramUpdater)
+			bind(IDiagramServerManager).to(DiagramServerManager)
 		])
 	}
 	

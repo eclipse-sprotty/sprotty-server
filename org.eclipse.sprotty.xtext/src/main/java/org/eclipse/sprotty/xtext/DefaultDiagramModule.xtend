@@ -23,6 +23,7 @@ import org.eclipse.sprotty.ILayoutEngine
 import org.eclipse.sprotty.IModelUpdateListener
 import org.eclipse.sprotty.IPopupModelFactory
 import org.eclipse.sprotty.xtext.ls.DiagramServerManager
+import org.eclipse.sprotty.xtext.ls.IDiagramServerManager
 import org.eclipse.sprotty.xtext.tracing.ITraceProvider
 import org.eclipse.sprotty.xtext.tracing.XtextTraceProvider
 import org.eclipse.xtext.service.AbstractGenericModule
@@ -39,7 +40,7 @@ abstract class DefaultDiagramModule extends AbstractGenericModule {
 		LanguageAwareDiagramServer
 	}
 	
-	def bindIDiagramServerProvider() {
+	def Class<? extends IDiagramServerManager> bindIDiagramServerManager() {
 		DiagramServerManager
 	}
 	
