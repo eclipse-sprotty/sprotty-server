@@ -19,7 +19,6 @@ package org.eclipse.sprotty.xtext.ls
 import com.google.common.collect.HashMultimap
 import com.google.inject.Inject
 import com.google.inject.Singleton
-import java.util.Collection
 import java.util.List
 import java.util.Map
 import org.eclipse.sprotty.IDiagramServer
@@ -32,7 +31,7 @@ import org.eclipse.xtext.util.internal.Log
 
 @Log
 @Singleton
-class DiagramServerManager {
+class DiagramServerManager implements IDiagramServerManager {
 
 	// injecting this yields a ProvisionException
 	DiagramLanguageServer languageServer
@@ -41,18 +40,18 @@ class DiagramServerManager {
 
 	Map<String, IDiagramServer> clientId2diagramServer = newLinkedHashMap
 	
-	List<IDiagramServerFactory> diagramServerFactories 
+	List<IDiagramServerFactory> diagramServerFactories
 
-	def void initialize(DiagramLanguageServer languageServer) {
+	override initialize(DiagramLanguageServer languageServer) {
 		this.languageServer = languageServer
 	}
 
-	def List<? extends ILanguageAwareDiagramServer> findDiagramServersByUri(String uri) {
+	override findDiagramServersByUri(String uri) {
 		synchronized (clientId2diagramServer)
 			clientId2diagramServer.values.filter(ILanguageAwareDiagramServer).filter[sourceUri == uri].toList
 	}
 
-	def IDiagramServer getDiagramServer(String diagramType, String clientId) {
+	override getDiagramServer(String diagramType, String clientId) {
 		synchronized (clientId2diagramServer) {
 			val existingDiagramServer = clientId2diagramServer.get(clientId)
 			if (existingDiagramServer !== null) {
@@ -75,12 +74,12 @@ class DiagramServerManager {
 		}
 	}
 	
-	def void removeDiagramServer(String clientId) {
+	override removeDiagramServer(String clientId) {
 		synchronized (clientId2diagramServer)
 			clientId2diagramServer.remove(clientId)
 	}
 	
-	def Collection<? extends IDiagramServer> getDiagramServers() {
+	override getDiagramServers() {
 		clientId2diagramServer.values
 	}
 	

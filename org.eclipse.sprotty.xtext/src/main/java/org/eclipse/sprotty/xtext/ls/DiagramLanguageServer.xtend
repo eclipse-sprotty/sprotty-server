@@ -43,7 +43,7 @@ import org.eclipse.lsp4j.VersionedTextDocumentIdentifier
  * the languages and diagram types in the language server. 
  * 
  * It uses {@link IDiagramServerFactory}s to instantiate language and diagramType specific 
- * {@link IDiagramServer}s, a {@link DiagramServerManager} to manage these instances and
+ * {@link IDiagramServer}s, a {@link IDiagramServerManager} to manage these instances and
  * a {@link DiagramUpdater} to sync the diagram with model changes.
  */
 @Log
@@ -54,7 +54,7 @@ class DiagramLanguageServer extends LanguageServerImpl implements DiagramServerE
 	
 	@Inject
 	@Accessors(PUBLIC_GETTER)
-	DiagramServerManager diagramServerManager
+	IDiagramServerManager diagramServerManager
 
 	@Inject
 	@Accessors(PUBLIC_GETTER)
