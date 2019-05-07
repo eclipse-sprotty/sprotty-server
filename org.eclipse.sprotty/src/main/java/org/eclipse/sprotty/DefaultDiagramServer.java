@@ -233,11 +233,11 @@ public class DefaultDiagramServer implements IDiagramServer {
 	}
 	
 	/**
-	 * Whether and when the server needs to compute the layout of parts of the model. The layout is computed 
+	 * Whether and when the server needs to compute the layout of parts of the model. The layout is computed
 	 * with the layout engine configured with {@link #setLayoutEngine(ILayoutEngine)}, so returning {@code true}
 	 * here makes sense only if such an engine is available.
-	 * 
-	 * <p>The default implementation returns the value configured with {@link #setNeedsServerLayout(boolean)},
+	 *
+	 * <p>The default implementation returns the value configured with {@link #setServerLayoutKind(ServerLayoutKind)},
 	 * but this can be overridden to determine the value depending on the given model. The initial value
 	 * is {@code false}.</p>
 	 */
