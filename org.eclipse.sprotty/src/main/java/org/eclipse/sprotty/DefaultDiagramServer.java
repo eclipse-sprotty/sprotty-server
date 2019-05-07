@@ -64,6 +64,8 @@ public class DefaultDiagramServer implements IDiagramServer {
 	private ServerStatus status;
 	
 	private String lastSubmittedModelType;
+
+	private SModelCloner smodelCloner;
 	
 	public DefaultDiagramServer() {
 		currentRoot = new SModelRoot();
@@ -180,16 +182,13 @@ public class DefaultDiagramServer implements IDiagramServer {
 	
 	@Override
 	public void updateModel(SModelRoot newRoot) {
+		if (newRoot == null)
+			throw new IllegalArgumentException("updateModel() cannot be called with null");
 		synchronized(modelLock) {
-			if (newRoot == null) {
-				// Assume that the current model has been modified in-place
-				newRoot = currentRoot;
-			} else {
-				if (getServerLayoutKind(newRoot) == ServerLayoutKind.AUTOMATIC) {
-					LayoutUtil.copyLayoutData(currentRoot, newRoot);
-				}
-				currentRoot = newRoot;
+			if (getServerLayoutKind(newRoot) == ServerLayoutKind.AUTOMATIC) {
+				LayoutUtil.copyLayoutData(currentRoot, newRoot);
 			}
+			currentRoot = newRoot;
 			newRoot.setRevision(++revision);
 		}
 		submitModel(newRoot, true);
@@ -455,10 +454,26 @@ public class DefaultDiagramServer implements IDiagramServer {
 		if (getServerLayoutKind(currentRoot) == ServerLayoutKind.MANUAL) {
 			ILayoutEngine layoutEngine = getLayoutEngine();
 			if (layoutEngine != null) {
-				layoutEngine.layout(currentRoot);
+				// clone the current model, as it has already been sent to the client with the old revision
+				SModelCloner cloner = getSModelCloner();
+				SModelRoot newRoot = cloner.clone(currentRoot);
+				synchronized(modelLock) {
+					newRoot.setRevision(++revision);
+					currentRoot = newRoot;
+				}
+				layoutEngine.layout(newRoot);
+				doSubmitModel(newRoot, true);
 			}
 		}
-		doSubmitModel(currentRoot, true);
+	}
+	
+	@Inject 
+	protected void setSModelCloner(SModelCloner smodelCloner) {
+		this.smodelCloner = smodelCloner;
+	}
+	
+	protected SModelCloner getSModelCloner() {
+		return this.smodelCloner;	
 	}
 	
 	public static class DefaultDiagramState implements IDiagramState {
