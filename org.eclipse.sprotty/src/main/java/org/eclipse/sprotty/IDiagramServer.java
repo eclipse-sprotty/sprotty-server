@@ -70,9 +70,8 @@ public interface IDiagramServer extends Consumer<ActionMessage> {
 	 * The main difference to {@link #setModel(SModelRoot)} is that with this method the change will be
 	 * animated in the client.
 	 * 
-	 * <p>The root parameter can be {@code null}, in which case the current root is resent to the client.
-	 * This behavior can be useful when the updated model is created by modifiying the previous instance
-	 * instead of creating a new instance.</p> 
+	 * Since 0.7 the new <code>root</code> should no longer be null. as in-place modifications of the 
+	 * model should be avoid due to concurrency issues.
 	 */
 	void updateModel(SModelRoot root);
 	
