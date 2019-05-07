@@ -24,5 +24,9 @@ class DiagramServerModule extends AbstractGenericModule {
 	def Class<? extends LanguageServerImpl> bindLanguageServerImpl() {
 		DiagramLanguageServer
 	}  
+	
+	def Class<? extends IDiagramServerManager> bindIDiagramServerManager() {
+		DiagramServerManager
+	}	
 }
 
