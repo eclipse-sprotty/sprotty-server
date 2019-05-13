@@ -219,6 +219,8 @@ class LayoutOptions {
 	Double hGap
 	String vAlign
 	String hAlign
+	Double minWidth
+	Double minHeight
 	
 	new() {}
 	
