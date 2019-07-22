@@ -49,7 +49,7 @@ abstract class DiagramServerLauncher extends ServerLauncher {
 	public static val TRACE = '-trace'
 	public static val NO_VALIDATE = '-noValidate'
 
-	@Inject LanguageServerImpl languageServer
+	@Inject protected LanguageServerImpl languageServer
 
 	DiagramLanguageServerSetup setup
 	
