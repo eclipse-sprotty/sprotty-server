@@ -23,5 +23,6 @@ ext.versions = [
     gson: '2.8.2',
     websocket: '1.0',
     log4j: '1.2.16',
-    junit: '4.12'
+    junit: '4.12',
+    lsp4j: '0.7.2'
 ]
