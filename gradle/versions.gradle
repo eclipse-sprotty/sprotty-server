@@ -17,7 +17,7 @@
 version = '0.7.0-SNAPSHOT'
 
 ext.versions = [
-    xtext: '2.18.0-SNAPSHOT',
+    xtext: '2.18.0',
     elk: '[0.4.0,0.6)',
     guice: '4.2.2',
     gson: '2.8.2',
