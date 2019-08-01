@@ -42,15 +42,15 @@ abstract class SModelElement {
 @Accessors
 @ToString(skipNulls = true)
 class SModelRoot extends SModelElement {
-	
+
 	public static final SModelRoot EMPTY_ROOT = new SModelRoot [
 		type = "NONE"
 		id = "EMPTY"
 	]
-	
+
 	Bounds canvasBounds
 	int revision
-	
+
 	new() {
 		type = 'root'
 	}
@@ -71,7 +71,7 @@ class SGraph extends SModelRoot implements BoundsAware {
 	LayoutOptions layoutOptions
 
 	new() {
-		type = 'graph'	
+		type = 'graph'
 	}
 	new(Consumer<SGraph> initializer) {
 		this()
@@ -100,7 +100,7 @@ abstract class SShapeElement extends SModelElement implements BoundsAware {
 class SNode extends SShapeElement implements Layouting, EdgeLayoutable  {
 	String layout
 	EdgePlacement edgePlacement
-	
+
 	new() {
 		type = 'node'
 	}
@@ -136,7 +136,7 @@ class SEdge extends SModelElement {
 	String sourceId
 	String targetId
 	List<Point> routingPoints
-	
+
 	new() {
 		type = 'edge'
 	}
@@ -155,7 +155,7 @@ class SLabel extends SShapeElement implements Alignable, EdgeLayoutable {
 	String text
 	Point alignment
 	EdgePlacement edgePlacement
-	
+
 	new() {
 		type = 'label'
 	}
@@ -173,7 +173,7 @@ class SLabel extends SShapeElement implements Alignable, EdgeLayoutable {
 @ToString(skipNulls = true)
 class SCompartment extends SShapeElement implements Layouting {
 	String layout
-	
+
 	new() {
 		type = 'comp'
 	}
@@ -184,14 +184,13 @@ class SCompartment extends SShapeElement implements Layouting {
 }
 
 /**
- * A compartment is used to group multiple child elements such as labels of a node. Usually a {@code vbox}
- * or {@code hbox} layout is used to arrange these children.
+ * A button is something the user can click.
  */
 @Accessors
 @ToString(skipNulls = true)
 class SButton extends SShapeElement implements BoundsAware {
 	Boolean enabled
-	
+
 	new() {
 		type = 'button'
 	}
@@ -209,9 +208,9 @@ class SButton extends SShapeElement implements BoundsAware {
 @Accessors
 @ToString(skipNulls = true)
 class LayoutOptions {
-	Double paddingLeft	
+	Double paddingLeft
 	Double paddingRight
-	Double paddingTop	
+	Double paddingTop
 	Double paddingBottom
 	Double paddingFactor
 	Boolean resizeContainer
@@ -221,9 +220,9 @@ class LayoutOptions {
 	String hAlign
 	Double minWidth
 	Double minHeight
-	
+
 	new() {}
-	
+
 	new(Consumer<LayoutOptions> initializer) {
 		initializer.accept(this)
 	}
@@ -236,35 +235,35 @@ class LayoutOptions {
 @ToString(skipNulls = true)
 class EdgePlacement {
 	enum Side { left, right, top, bottom, on }
-	
+
 	/**
 	 * A value between 0 (source) and 1 (target) describing the position along the edge.
 	 */
-	Double position	
-	
+	Double position
+
 	/**
 	 * Offset of the element to the edge in pixels
 	 */
-	Double offset	
-	
+	Double offset
+
 	/**
-	 * Where to place the element relative to the edges direction. 
+	 * Where to place the element relative to the edges direction.
 	 */
 	@Accessors(PUBLIC_GETTER)
 	String side
-	
+
 	/**
 	 * Whether to rotate the element such that it is tangential to the edge or not.
 	 * Defaults to true.
 	 */
 	Boolean rotate
-	
+
 	new() {}
-	
+
 	new(Consumer<EdgePlacement> initializer) {
 		initializer.accept(this)
 	}
-	
+
 	def setSide(Side side) {
 		this.side = side.toString
 	}
@@ -277,7 +276,7 @@ class EdgePlacement {
 @ToString(skipNulls = true)
 class HtmlRoot extends SModelRoot {
     List<String> classes
-	
+
 	new() {
 		type = 'html'
 	}
@@ -295,7 +294,7 @@ class HtmlRoot extends SModelRoot {
 @ToString(skipNulls = true)
 class PreRenderedElement extends SModelElement {
 	String code
-	
+
 	new() {
 		type = 'pre-rendered'
 	}
@@ -311,7 +310,7 @@ class PreRenderedElement extends SModelElement {
 @Accessors
 @ToString(skipNulls = true)
 class SIssueMarker extends SShapeElement {
-	
+
 	List<SIssue> issues
 
 	new() {
@@ -320,27 +319,27 @@ class SIssueMarker extends SShapeElement {
 	new(Consumer<SIssueMarker> initializer) {
 		this()
 		initializer.accept(this)
-	}	
-	
+	}
+
 }
 
 @Accessors
 @ToString(skipNulls = true)
 class SIssue {
 	enum Severity { error, warning, info }
-	
+
 	String message
 
 	@Accessors(PUBLIC_GETTER)
 	String severity
-	
+
 	new() {}
 	new(Consumer<SIssue> initializer) {
 		initializer.accept(this)
 	}
-	
+
 	def setSeverity(Severity severity) {
 		this.severity = severity.toString
-	}	
+	}
 }
 
