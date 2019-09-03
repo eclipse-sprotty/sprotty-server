@@ -15,19 +15,30 @@
  ********************************************************************************/
 package org.eclipse.sprotty;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 import javax.inject.Inject;
+
+import org.apache.log4j.Logger;
+
+import com.google.common.base.Strings;
 
 /**
  * The default diagram server implementation. It realizes the same message protocol as the
  * TypeScript class {@code LocalModelSource}.
  */
 public class DefaultDiagramServer implements IDiagramServer {
+	
+	private static final Logger LOG = Logger.getLogger(DefaultDiagramServer.class);
+	
+	protected static AtomicLong nextRequestId = new AtomicLong();
 	
 	private String clientId;
 	
@@ -53,9 +64,11 @@ public class DefaultDiagramServer implements IDiagramServer {
 	
 	private ServerLayoutKind serverLayoutKind = ServerLayoutKind.AUTOMATIC;
 	
-	private Set<String> expandedElements = new HashSet<>();
+	private final Map<String, CompletableFuture<ResponseAction>> requests = new HashMap<>();
+	
+	private final Set<String> expandedElements = new HashSet<>();
 
-	private Set<String> selectedElements = new HashSet<>();
+	private final Set<String> selectedElements = new HashSet<>();
 	
 	private Object modelLock = new Object();
 
@@ -164,24 +177,43 @@ public class DefaultDiagramServer implements IDiagramServer {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
+	@Override
+	public <Res extends ResponseAction> CompletableFuture<Res> request(RequestAction<Res> action) {
+		if (Strings.isNullOrEmpty(action.getRequestId())) {
+			action.setRequestId(generateRequestId());
+		}
+		CompletableFuture<Res> future = new CompletableFuture<>();
+		this.requests.put(action.getRequestId(), (CompletableFuture<ResponseAction>) future);
+		this.dispatch(action);
+		return future;
+	}
+	
+	/**
+	 * Generate a unique {@code requestId} for a request action.
+	 */
+	protected String generateRequestId() {
+	    return "server_" + nextRequestId.incrementAndGet();
+	}
+	
 	@Override
 	public SModelRoot getModel() {
 		return currentRoot;
 	}
 	
 	@Override
-	public void setModel(SModelRoot newRoot) {
+	public CompletableFuture<Void> setModel(SModelRoot newRoot) {
 		if (newRoot == null)
 			throw new NullPointerException();
 		synchronized(modelLock) {
 			newRoot.setRevision(++revision);
 			currentRoot = newRoot;
 		}
-		submitModel(newRoot, false);
+		return submitModel(newRoot, false, null);
 	}
 	
 	@Override
-	public void updateModel(SModelRoot newRoot) {
+	public CompletableFuture<Void> updateModel(SModelRoot newRoot) {
 		if (newRoot == null)
 			throw new IllegalArgumentException("updateModel() cannot be called with null");
 		synchronized(modelLock) {
@@ -191,7 +223,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 			currentRoot = newRoot;
 			newRoot.setRevision(++revision);
 		}
-		submitModel(newRoot, true);
+		return submitModel(newRoot, true, null);
 	}
 	
 	public ServerStatus getStatus() {
@@ -253,20 +285,33 @@ public class DefaultDiagramServer implements IDiagramServer {
 	 * is sent, otherwise either a {@link SetModelAction} or an {@link UpdateModelAction} is sent depending on
 	 * the {@code update} parameter.
 	 */
-	protected void submitModel(SModelRoot newRoot, boolean update) {
+	protected CompletableFuture<Void> submitModel(SModelRoot newRoot, boolean update, Action cause) {
 		if (needsClientLayout(newRoot)) {
-			dispatch(new RequestBoundsAction(newRoot));
-			IModelUpdateListener listener = getModelUpdateListener();
-			if (getServerLayoutKind(newRoot) == ServerLayoutKind.NONE && listener != null) {
-				// In this case the client won't send us the computed bounds, so we trigger the listener immediately
-				listener.modelSubmitted(newRoot, this);
+			if (getServerLayoutKind(newRoot) == ServerLayoutKind.NONE) {
+				// In this case the client won't send us the computed bounds
+				dispatch(new RequestBoundsAction(newRoot));
+				IModelUpdateListener listener = getModelUpdateListener();
+				if (listener != null)
+					listener.modelSubmitted(newRoot, this);
+			} else {
+				return request(new RequestBoundsAction(newRoot)).handle((response, exception) -> {
+					if (exception != null) {
+						LOG.error(exception);
+					} else {
+						SModelRoot model = handle(response);
+						if (model != null)
+							doSubmitModel(model, true, cause);
+					}
+					return null;
+				});
 			}
 		} else {
-			doSubmitModel(newRoot, update);
+			doSubmitModel(newRoot, update, cause);
 		}
+		return CompletableFuture.completedFuture(null);
 	}
 	
-	private void doSubmitModel(SModelRoot newRoot, boolean update) {
+	private void doSubmitModel(SModelRoot newRoot, boolean update, Action cause) {
 		if (getServerLayoutKind(newRoot) == ServerLayoutKind.AUTOMATIC) {
 			ILayoutEngine layoutEngine = getLayoutEngine();
 			if (layoutEngine != null) {
@@ -276,7 +321,13 @@ public class DefaultDiagramServer implements IDiagramServer {
 		synchronized (modelLock) {
 			if (newRoot.getRevision() == revision) {
 				String modelType = newRoot.getType();
-				if (update && modelType != null && modelType.equals(lastSubmittedModelType)) {
+				if (cause instanceof RequestModelAction
+						&& !Strings.isNullOrEmpty(((RequestModelAction) cause).getRequestId())) {
+					RequestModelAction request = (RequestModelAction) cause;
+					SetModelAction response = new SetModelAction(newRoot);
+					response.setResponseId(request.getRequestId());
+		            dispatch(response);
+		        } else if (update && modelType != null && modelType.equals(lastSubmittedModelType)) {
 					dispatch(new UpdateModelAction(newRoot));
 				} else {
 					dispatch(new SetModelAction(newRoot));
@@ -292,9 +343,21 @@ public class DefaultDiagramServer implements IDiagramServer {
 	
 	@Override
 	public void accept(ActionMessage message) {
-		String clientId = getClientId();
-		if (clientId != null && clientId.equals(message.getClientId())) {
+		String clientId = message.getClientId();
+		if (clientId == null || clientId.equals(this.getClientId())) {
 			Action action = message.getAction();
+			if (action instanceof ResponseAction) {
+				ResponseAction response = (ResponseAction) action;
+				CompletableFuture<ResponseAction> future = requests.get(response.getResponseId());
+	            if (future != null) {
+	                this.requests.remove(response.getResponseId());
+	                future.complete(response);
+	                return;
+	            }
+	            if (LOG.isInfoEnabled()) {
+	            	LOG.info("No matching request for response:\n" + action);
+	            }
+	        }
 			handleAction(action);
 		}
 	}
@@ -342,23 +405,21 @@ public class DefaultDiagramServer implements IDiagramServer {
 			if (needsClientLayout != null && !needsClientLayout.isEmpty())
 				setNeedsClientLayout(Boolean.parseBoolean(needsClientLayout));
 		}
-		SModelRoot model = getModel();
-		if (model != null) {
-			submitModel(model, false);
-		}
+		submitModel(getModel(), false, request);
 	}
 	
 	/**
 	 * Called when a {@link ComputedBoundsAction} is received.
 	 */
-	protected void handle(ComputedBoundsAction computedBounds) {
+	protected SModelRoot handle(ComputedBoundsAction computedBounds) {
 		synchronized(modelLock) {
 			SModelRoot model = getModel();
-			if (model != null && model.getRevision() == computedBounds.getRevision()) {
+			if (model.getRevision() == computedBounds.getRevision()) {
 				LayoutUtil.applyBounds(model, computedBounds);
-				doSubmitModel(model, true);
+				return model;
 			}
 		}
+		return null;
 	}
 	
 	/**
@@ -371,7 +432,9 @@ public class DefaultDiagramServer implements IDiagramServer {
 		if (factory != null) {
 			SModelRoot popupModel = factory.createPopupModel(element, request, this);
 			if (popupModel != null) {
-				dispatch(new SetPopupModelAction(popupModel));
+				SetPopupModelAction response = new SetPopupModelAction(popupModel);
+				response.setResponseId(request.getRequestId());
+				dispatch(response);
 			}
 		}
 	}
@@ -397,7 +460,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 	 */
 	protected void handle(SelectAllAction action) {
 		if (action.isSelect())
-			new SModelIndex(currentRoot).allIds().forEach(id -> selectedElements.add(id));
+			new SModelIndex(getModel()).allIds().forEach(id -> selectedElements.add(id));
 		else
 			selectedElements.clear();
 		
@@ -427,7 +490,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 	 */
 	protected void handle(CollapseExpandAllAction action) {
 		if (action.isExpand())
-			new SModelIndex(currentRoot).allIds().forEach(id -> expandedElements.add(id));
+			new SModelIndex(getModel()).allIds().forEach(id -> expandedElements.add(id));
 		else
 			expandedElements.clear();
 		
@@ -451,18 +514,21 @@ public class DefaultDiagramServer implements IDiagramServer {
 	 * Called when a {@link LayoutAction} is received.
 	 */
 	protected void handle(LayoutAction action) {
-		if (getServerLayoutKind(currentRoot) == ServerLayoutKind.MANUAL) {
+		if (getServerLayoutKind(getModel()) != ServerLayoutKind.NONE) {
 			ILayoutEngine layoutEngine = getLayoutEngine();
 			if (layoutEngine != null) {
-				// clone the current model, as it has already been sent to the client with the old revision
+				// Clone the current model, as it has already been sent to the client with the old revision
 				SModelCloner cloner = getSModelCloner();
-				SModelRoot newRoot = cloner.clone(currentRoot);
+				SModelRoot newRoot = cloner.clone(getModel());
 				synchronized(modelLock) {
 					newRoot.setRevision(++revision);
 					currentRoot = newRoot;
 				}
-				layoutEngine.layout(newRoot);
-				doSubmitModel(newRoot, true);
+				// Don't execute layout twice
+				if (getServerLayoutKind(newRoot) != ServerLayoutKind.AUTOMATIC) {
+					layoutEngine.layout(newRoot);
+				}
+				doSubmitModel(newRoot, true, action);
 			}
 		}
 	}
