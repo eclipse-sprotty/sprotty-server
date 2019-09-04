@@ -1,0 +1,6 @@
+dependencies {
+	compile project(':org.eclipse.sprotty.server')
+	compile project(':org.eclipse.sprotty.layout')
+	compile "com.google.inject:guice:${versions.guice}"
+	compile "org.eclipse.elk:org.eclipse.elk.alg.force:${versions.elk}"
+}

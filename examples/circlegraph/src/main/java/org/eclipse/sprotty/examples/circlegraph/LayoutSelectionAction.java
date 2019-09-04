@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2018 TypeFox and others.
+ * Copyright (c) 2019 TypeFox and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,17 +13,19 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+package org.eclipse.sprotty.examples.circlegraph;
 
-rootProject.name = 'sprotty-server'
+import org.eclipse.sprotty.Action;
 
-include 'org.eclipse.sprotty'
-include 'org.eclipse.sprotty.server'
-include 'org.eclipse.sprotty.layout'
-include 'org.eclipse.sprotty.xtext'
+public class LayoutSelectionAction implements Action {
+	
+	public static final String KIND = "layoutSelection";
+	
+	private String kind = KIND;
 
-file('examples').eachDir { dir ->
-	if (dir.name != 'node_modules') {
-		include "example-${dir.name}"
-		project(":example-${dir.name}").projectDir = dir
+	@Override
+	public String getKind() {
+		return kind;
 	}
+
 }

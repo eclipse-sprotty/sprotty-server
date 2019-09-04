@@ -86,6 +86,20 @@ class Bounds {
 	}
 }
 
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls = true)
+class Viewport implements Scrollable, Zoomable {
+	Point scroll
+	double zoom
+	
+	new() {}
+	new(Point scroll, double zoom) {
+		this.scroll = scroll
+		this.zoom = zoom
+	}
+}
+
 /**
  * Model elements that implement this interface have a position and a size.
  */
@@ -105,6 +119,14 @@ interface Alignable {
 	def void setAlignment(Point alignment)
 }
 
+interface Scrollable {
+	def Point getScroll()
+}
+
+interface Zoomable {
+	def double getZoom() 	
+}
+
 /**
  * Used to identify model elements that specify a <em>client</em> layout to apply to their children.
  * The children of such elements are ignored by the server-side layout engine because they are
@@ -118,7 +140,7 @@ interface Layouting {
 /**
  * Used to place a child relative to its parent edge.
  */
- interface EdgeLayoutable {
+interface EdgeLayoutable {
  	def EdgePlacement getEdgePlacement()
  	def void setEdgePlacement(EdgePlacement edgePlacement)  
- }
+}

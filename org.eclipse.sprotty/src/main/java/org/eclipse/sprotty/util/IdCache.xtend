@@ -16,21 +16,18 @@
 
 package org.eclipse.sprotty.util
 
-import java.util.Map
+import com.google.common.collect.BiMap
+import com.google.common.collect.HashBiMap
 import java.util.Set
 import org.eclipse.sprotty.SModelElement
-import org.apache.log4j.Logger
 
 /** 
  * Helps to create unique IDs for {@link SModelElement}s.
  */
 class IdCache <T> {
 	
-	static val LOG = Logger.getLogger(IdCache)
-
-	Map<T, String> element2id = newHashMap
-	Map<String, T> id2element = newHashMap
-	Set<String> otherIds = newHashSet
+	val BiMap<String, T> id2element = HashBiMap.create
+	val Set<String> otherIds = newHashSet
 
 	def String uniqueId(T element, String idProposal) {
 		uniqueId(element, idProposal, 0)
@@ -40,38 +37,26 @@ class IdCache <T> {
 		uniqueId(null, idProposal, 0)
 	}
 
-	protected def String uniqueId(T element, String idPrefix, int count) {
-		val proposedId = if (count === 0)
-				idPrefix
-			else
-				idPrefix + count
-
-		val existingElement = id2element.get(proposedId)
-		if (existingElement !== null) {
-			if (existingElement == element)
+	def String uniqueId(T element, String idPrefix, int countStart) {
+		var String proposedId
+		var count = countStart
+		do {
+			proposedId = if (count == 0) idPrefix else idPrefix + count
+			if (element !== null && id2element.get(proposedId) == element)
 				return proposedId
-			else
-				return handleDuplicate(element, idPrefix, count)
-
-		}
-		if (otherIds.contains(proposedId))
-			return handleDuplicate(element, idPrefix, count)
-
+			count++
+		} while (id2element.containsKey(proposedId) || otherIds.contains(proposedId))
+		
 		if (element === null) {
 			otherIds.add(proposedId)
 		} else {
-			element2id.put(element, proposedId)
 			id2element.put(proposedId, element)
 		}
 		return proposedId
 	}
 
 	def getId(T element) {
-		element2id.get(element)
+		id2element.inverse.get(element)
 	}
 
-	protected def String handleDuplicate(T element, String duplicateId, int count) {
-		LOG.warn('''Duplicate ID '«duplicateId»«if (count > 0) count else ''»'«»''')
-		return uniqueId(element, duplicateId, count + 1)
-	}
 }

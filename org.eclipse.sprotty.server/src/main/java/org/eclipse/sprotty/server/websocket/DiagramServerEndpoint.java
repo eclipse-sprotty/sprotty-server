@@ -17,18 +17,18 @@ package org.eclipse.sprotty.server.websocket;
 
 import java.util.function.Consumer;
 
+import javax.inject.Inject;
 import javax.websocket.Endpoint;
 import javax.websocket.EndpointConfig;
 import javax.websocket.MessageHandler;
 import javax.websocket.Session;
 
+import org.eclipse.sprotty.ActionMessage;
 import org.eclipse.sprotty.IDiagramServer;
 import org.eclipse.sprotty.server.json.ActionTypeAdapter;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
-import org.eclipse.sprotty.ActionMessage;
 
 /**
  * A websocket endpoint to connect a diagram server with a sprotty client.
@@ -39,6 +39,7 @@ public class DiagramServerEndpoint extends Endpoint implements Consumer<ActionMe
 	
 	private Gson gson;
 	
+	@Inject
 	private IDiagramServer.Provider diagramServerProvider;
 	
 	private Consumer<Exception> exceptionHandler;
@@ -75,8 +76,12 @@ public class DiagramServerEndpoint extends Endpoint implements Consumer<ActionMe
 		}
 	}
 	
-	protected void fireError(Exception message) {
-		exceptionHandler.accept(message);
+	protected void fireError(Exception exception) {
+		if (exceptionHandler != null) {
+			exceptionHandler.accept(exception);
+		} else {
+			exception.printStackTrace();
+		}
 	}
 	
 	protected void initializeGson() {

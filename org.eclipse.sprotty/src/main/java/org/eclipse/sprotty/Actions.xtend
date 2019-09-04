@@ -31,6 +31,25 @@ interface Action {
 }
 
 /**
+ * A request action is tied to the expectation of receiving a corresponding response action.
+ * The `requestId` property is used to match the received response with the original request.
+ */
+interface RequestAction<Res extends ResponseAction> extends Action {
+	def String getRequestId()
+	def void setRequestId(String requestId)
+}
+
+/**
+ * A response action is sent to respond to a request action. The `responseId` must match
+ * the `requestId` of the preceding request. In case the `responseId` is empty or undefined,
+ * the action is handled as standalone, i.e. it was fired without a preceding request.
+ */
+interface ResponseAction extends Action {
+	def String getResponseId()
+	def void setResponseId(String responseId)
+}
+
+/**
  * Wrapper for actions when transferring them between server and client via an {@link IDiagramServer}.
  */
 @Accessors
@@ -58,18 +77,19 @@ class ActionMessage {
 @Accessors
 @EqualsHashCode
 @ToString(skipNulls = true)
-class RequestModelAction implements Action {
+class RequestModelAction implements RequestAction<SetModelAction>{
 	public static val KIND = 'requestModel'
 	String kind = KIND
 	
 	String diagramType
-	
 	Map<String, String> options
+	String requestId
 	
 	new() {}
 	new(Consumer<RequestModelAction> initializer) {
 		initializer.accept(this)
 	}
+	
 }
 
 /**
@@ -78,11 +98,12 @@ class RequestModelAction implements Action {
 @Accessors
 @EqualsHashCode
 @ToString(skipNulls = true)
-class SetModelAction implements Action {
+class SetModelAction implements ResponseAction {
 	public static val KIND = 'setModel'
 	String kind = KIND
 	
 	SModelRoot newRoot
+	String responseId
 	
 	new() {}
 	new(Consumer<SetModelAction> initializer) {
@@ -125,11 +146,12 @@ class UpdateModelAction implements Action {
 @Accessors
 @EqualsHashCode
 @ToString(skipNulls = true)
-class RequestBoundsAction implements Action {
+class RequestBoundsAction implements RequestAction<ComputedBoundsAction> {
 	public static val KIND = 'requestBounds'
 	String kind = KIND
 	
 	SModelRoot newRoot
+	String requestId
 	
 	new() {}
 	new(Consumer<RequestBoundsAction> initializer) {
@@ -150,13 +172,14 @@ class RequestBoundsAction implements Action {
 @Accessors
 @EqualsHashCode
 @ToString(skipNulls = true)
-class ComputedBoundsAction implements Action {
+class ComputedBoundsAction implements ResponseAction {
 	public static val KIND = 'computedBounds'
 	String kind = KIND
 	int revision 
 	
 	List<ElementAndBounds> bounds
 	List<ElementAndAlignment> alignments
+	String responseId
 	
 	new() {}
 	new(Consumer<ComputedBoundsAction> initializer) {
@@ -307,12 +330,13 @@ class FitToScreenAction implements Action {
 @Accessors
 @EqualsHashCode
 @ToString(skipNulls = true)
-class RequestPopupModelAction implements Action {
+class RequestPopupModelAction implements RequestAction<SetPopupModelAction> {
 	public static val KIND = 'requestPopupModel'
 	String kind = KIND
 	
 	String elementId
 	Bounds bounds
+	String requestId
 	
 	new() {}
 	new(Consumer<RequestPopupModelAction> initializer) {
@@ -328,11 +352,12 @@ class RequestPopupModelAction implements Action {
 @Accessors
 @EqualsHashCode
 @ToString(skipNulls = true)
-class SetPopupModelAction implements Action {
+class SetPopupModelAction implements ResponseAction {
 	public static val KIND = 'setPopupModel'
 	String kind = KIND
 	
 	SModelRoot newRoot
+	String responseId
 	
 	new() {}
 	new(Consumer<SetPopupModelAction> initializer) {
@@ -407,9 +432,11 @@ class OpenAction implements Action {
 @Accessors
 @EqualsHashCode
 @ToString(skipNulls = true)
-class RequestExportSvgAction implements Action {
+class RequestExportSvgAction implements RequestAction<ExportSvgAction> {
 	public static val KIND = 'requestExportSvg'
 	String kind = KIND
+	
+	String requestId
 	
 	new() {}
 	new(Consumer<RequestExportSvgAction> initializer) {
@@ -425,10 +452,12 @@ class RequestExportSvgAction implements Action {
 @Accessors
 @EqualsHashCode
 @ToString(skipNulls = true)
-class ExportSvgAction implements Action {
+class ExportSvgAction implements ResponseAction {
     public static val KIND = 'exportSvg'
     String svg
     String kind = KIND
+    
+    String responseId
 
 	new() {}
 	new(Consumer<ExportSvgAction> initializer) {
@@ -470,4 +499,53 @@ class ServerStatusAction implements Action {
 class LayoutAction implements Action {
 	public static val KIND = 'layout'
 	String kind = KIND
+}
+
+/**
+ * Request action for retrieving the current selection.
+ */
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls=true)
+class GetSelectionAction implements RequestAction<SelectionResult> {
+	public static val KIND = 'getSelection'
+	String kind = KIND
+
+	String requestId
+}
+
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls=true)
+class SelectionResult implements ResponseAction {
+	public static val KIND = 'selectionResult'
+	String kind = KIND
+
+	List<String> selectedElementsIDs
+	String responseId
+}
+
+/**
+ * Request action for retrieving the current viewport and canvas bounds.
+ */
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls=true)
+class GetViewportAction implements RequestAction<ViewportResult> {
+	public static val KIND = 'getViewport'
+	String kind = KIND
+
+	String requestId
+}
+
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls=true)
+class ViewportResult implements ResponseAction {
+	public static val KIND = 'viewportResult'
+	String kind = KIND
+
+	Viewport viewport
+	Bounds canvasBounds
+	String responseId
 }

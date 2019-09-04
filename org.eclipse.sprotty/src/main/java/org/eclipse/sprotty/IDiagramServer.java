@@ -16,6 +16,7 @@
 package org.eclipse.sprotty;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 /**
@@ -54,6 +55,14 @@ public interface IDiagramServer extends Consumer<ActionMessage> {
 	 */
 	void dispatch(Action action);
 	
+    /**
+     * Dispatch a request to the client. The returned future is resolved when a response with
+     * matching identifier is received. That response is _not_ handled by the diagram server.
+     * Instead, it is the responsibility of the caller of this method to handle the response
+     * properly.
+     */
+	<Res extends ResponseAction> CompletableFuture<Res> request(RequestAction<Res> action);
+	
 	/**
 	 * The current model, represented by its root element.
 	 */
@@ -63,7 +72,7 @@ public interface IDiagramServer extends Consumer<ActionMessage> {
 	 * Set the current model and send it to the client, if a remote endpoint has been configured.
 	 * The root must not be {@code null}.
 	 */
-	void setModel(SModelRoot root);
+	CompletableFuture<Void> setModel(SModelRoot root);
 	
 	/**
 	 * Set the current model and send an update to the client, if a remote endpoint has been configured.
@@ -73,7 +82,7 @@ public interface IDiagramServer extends Consumer<ActionMessage> {
 	 * Since 0.7 the new <code>root</code> should no longer be null. as in-place modifications of the 
 	 * model should be avoid due to concurrency issues.
 	 */
-	void updateModel(SModelRoot root);
+	CompletableFuture<Void> updateModel(SModelRoot root);
 	
 	/**
 	 * Set the current status popup model and send an update to the client, if a remote endpoint has 

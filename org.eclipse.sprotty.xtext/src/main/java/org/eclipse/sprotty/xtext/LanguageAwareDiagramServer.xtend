@@ -16,6 +16,7 @@
 package org.eclipse.sprotty.xtext
 
 import com.google.inject.Inject
+import org.apache.log4j.Logger
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.sprotty.DefaultDiagramServer
 import org.eclipse.sprotty.DiagramOptions
@@ -25,6 +26,7 @@ import org.eclipse.sprotty.SModelRoot
 import org.eclipse.sprotty.ServerStatus
 import org.eclipse.sprotty.util.IdCache
 import org.eclipse.sprotty.xtext.ls.DiagramLanguageServer
+import org.eclipse.sprotty.xtext.ls.DiagramUpdater
 import org.eclipse.sprotty.xtext.ls.IssueProvider
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.diagnostics.Diagnostic
@@ -33,7 +35,6 @@ import org.eclipse.xtext.ide.server.ILanguageServerAccess
 import org.eclipse.xtext.ide.server.ILanguageServerAccess.Context
 
 import static org.eclipse.sprotty.ServerStatus.Severity.*
-import org.eclipse.sprotty.xtext.ls.DiagramUpdater
 
 /**
  * Diagram server for Xtext languages. When a {@link RequestModelAction} is received,
@@ -41,6 +42,8 @@ import org.eclipse.sprotty.xtext.ls.DiagramUpdater
  * {@link DiagramUpdater#updateDiagram(LanguageAwareDiagramServer)}.
  */
 class LanguageAwareDiagramServer extends DefaultDiagramServer implements ILanguageAwareDiagramServer {
+	
+	static val LOG = Logger.getLogger(LanguageAwareDiagramServer)
 	
 	@Accessors
 	DiagramLanguageServer diagramLanguageServer
@@ -52,6 +55,8 @@ class LanguageAwareDiagramServer extends DefaultDiagramServer implements ILangua
 	
 	override protected handle(RequestModelAction request) {
 		if (model.type == 'NONE' && diagramLanguageServer !== null) {
+			if (!request.requestId.nullOrEmpty)
+				LOG.warn("Model requests are not supported by the Xtext diagram server.")
 			if (request.options !== null)
 				options = request.options
 			diagramLanguageServer.diagramUpdater.updateDiagram(this)

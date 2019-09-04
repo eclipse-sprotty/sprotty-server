@@ -19,12 +19,6 @@ import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.TypeAdapter;
-import com.google.gson.TypeAdapterFactory;
-import com.google.gson.reflect.TypeToken;
-
 import org.eclipse.sprotty.Action;
 import org.eclipse.sprotty.CenterAction;
 import org.eclipse.sprotty.CollapseExpandAction;
@@ -32,6 +26,8 @@ import org.eclipse.sprotty.CollapseExpandAllAction;
 import org.eclipse.sprotty.ComputedBoundsAction;
 import org.eclipse.sprotty.ExportSvgAction;
 import org.eclipse.sprotty.FitToScreenAction;
+import org.eclipse.sprotty.GetSelectionAction;
+import org.eclipse.sprotty.GetViewportAction;
 import org.eclipse.sprotty.LayoutAction;
 import org.eclipse.sprotty.OpenAction;
 import org.eclipse.sprotty.RequestBoundsAction;
@@ -40,10 +36,19 @@ import org.eclipse.sprotty.RequestModelAction;
 import org.eclipse.sprotty.RequestPopupModelAction;
 import org.eclipse.sprotty.SelectAction;
 import org.eclipse.sprotty.SelectAllAction;
+import org.eclipse.sprotty.SelectionResult;
+import org.eclipse.sprotty.ServerStatusAction;
 import org.eclipse.sprotty.SetBoundsAction;
 import org.eclipse.sprotty.SetModelAction;
 import org.eclipse.sprotty.SetPopupModelAction;
 import org.eclipse.sprotty.UpdateModelAction;
+import org.eclipse.sprotty.ViewportResult;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapter;
+import com.google.gson.TypeAdapterFactory;
+import com.google.gson.reflect.TypeToken;
 
 /**
  * Gson type adapter for sprotty actions.
@@ -80,6 +85,8 @@ public class ActionTypeAdapter extends PropertyBasedTypeAdapter<Action> {
 			addActionKind(ComputedBoundsAction.KIND, ComputedBoundsAction.class);
 			addActionKind(ExportSvgAction.KIND, ExportSvgAction.class);
 			addActionKind(FitToScreenAction.KIND, FitToScreenAction.class);
+			addActionKind(GetSelectionAction.KIND, GetSelectionAction.class);
+			addActionKind(GetViewportAction.KIND, GetViewportAction.class);
 			addActionKind(LayoutAction.KIND, LayoutAction.class);
 			addActionKind(OpenAction.KIND, OpenAction.class);
 			addActionKind(RequestBoundsAction.KIND, RequestBoundsAction.class);
@@ -88,10 +95,13 @@ public class ActionTypeAdapter extends PropertyBasedTypeAdapter<Action> {
 			addActionKind(RequestPopupModelAction.KIND, RequestPopupModelAction.class);
 			addActionKind(SelectAction.KIND, SelectAction.class);
 			addActionKind(SelectAllAction.KIND, SelectAllAction.class);
+			addActionKind(SelectionResult.KIND, SelectionResult.class);
+			addActionKind(ServerStatusAction.KIND, ServerStatusAction.class);
 			addActionKind(SetBoundsAction.KIND, SetBoundsAction.class);
 			addActionKind(SetModelAction.KIND, SetModelAction.class);
 			addActionKind(SetPopupModelAction.KIND, SetPopupModelAction.class);
 			addActionKind(UpdateModelAction.KIND, UpdateModelAction.class);
+			addActionKind(ViewportResult.KIND, ViewportResult.class);
 		}
 		
 		public void addActionKind(String kind, Class<? extends Action> clazz) {
