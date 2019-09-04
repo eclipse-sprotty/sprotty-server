@@ -312,10 +312,12 @@ public class DefaultDiagramServer implements IDiagramServer {
 	}
 	
 	private void doSubmitModel(SModelRoot newRoot, boolean update, Action cause) {
-		if (getServerLayoutKind(newRoot) == ServerLayoutKind.AUTOMATIC) {
+		ServerLayoutKind layoutKind = getServerLayoutKind(newRoot);
+		if (layoutKind == ServerLayoutKind.AUTOMATIC 
+				|| layoutKind == ServerLayoutKind.INTERACTIVE) {
 			ILayoutEngine layoutEngine = getLayoutEngine();
 			if (layoutEngine != null) {
-				layoutEngine.layout(newRoot);
+				layoutEngine.layout(newRoot, cause);
 			}
 		}
 		synchronized (modelLock) {
@@ -514,7 +516,8 @@ public class DefaultDiagramServer implements IDiagramServer {
 	 * Called when a {@link LayoutAction} is received.
 	 */
 	protected void handle(LayoutAction action) {
-		if (getServerLayoutKind(getModel()) != ServerLayoutKind.NONE) {
+		ServerLayoutKind layoutKind = getServerLayoutKind(currentRoot);
+		if (layoutKind != ServerLayoutKind.NONE) {
 			ILayoutEngine layoutEngine = getLayoutEngine();
 			if (layoutEngine != null) {
 				// Clone the current model, as it has already been sent to the client with the old revision
@@ -526,7 +529,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 				}
 				// Don't execute layout twice
 				if (getServerLayoutKind(newRoot) != ServerLayoutKind.AUTOMATIC) {
-					layoutEngine.layout(newRoot);
+					layoutEngine.layout(newRoot, action);
 				}
 				doSubmitModel(newRoot, true, action);
 			}

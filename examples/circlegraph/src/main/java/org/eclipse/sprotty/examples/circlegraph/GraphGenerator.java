@@ -21,12 +21,7 @@ import java.util.Random;
 import org.eclipse.sprotty.Dimension;
 import org.eclipse.sprotty.SEdge;
 import org.eclipse.sprotty.SGraph;
-import org.eclipse.sprotty.SModelElement;
 import org.eclipse.sprotty.SNode;
-import org.eclipse.sprotty.util.IdCache;
-
-import com.google.inject.Inject;
-import com.google.inject.Provider;
 
 public class GraphGenerator {
 	
@@ -34,21 +29,16 @@ public class GraphGenerator {
 	private static final int ADD_EDGE_COUNT = 50;
 	private static final double NODE_SIZE = 60;
 	
-	@Inject
-	private Provider<IdCache<SModelElement>> idCacheProvider;
-	
 	private Random random = new Random();
 	
 	public SGraph generateGraph() {
-		Context ctx = new Context();
-		ctx.idCache = idCacheProvider.get();
 		return new SGraph(graph -> {
 			graph.setId("graph");
 			graph.setChildren(new ArrayList<>(2 * NODE_COUNT + ADD_EDGE_COUNT));
 			
 			// Generate nodes
 			for (int n = 0; n < NODE_COUNT; n++) {
-				graph.getChildren().add(generateNode(ctx));
+				graph.getChildren().add(generateNode(n));
 			}
 			
 			// Generate one connected edge per node
@@ -58,9 +48,9 @@ public class GraphGenerator {
 					n2 = random.nextInt(NODE_COUNT);
 				} while (n1 == n2);
 				graph.getChildren().add(generateEdge(
-						graph.getChildren().get(n1).getId(),
-						graph.getChildren().get(n2).getId(),
-						ctx));
+						"node" + n1,
+						"node" + n2,
+						n1));
 			}
 			
 			// Generate additional edges
@@ -71,30 +61,26 @@ public class GraphGenerator {
 					n2 = random.nextInt(NODE_COUNT);
 				} while (n1 == n2);
 				graph.getChildren().add(generateEdge(
-						graph.getChildren().get(n1).getId(),
-						graph.getChildren().get(n2).getId(),
-						ctx));
+						"node" + n1,
+						"node" + n2,
+						NODE_COUNT + e));
 			}
 		});
 	}
 	
-	private SNode generateNode(Context ctx) {
+	private SNode generateNode(int n) {
 		return new SNode(node -> {
-			node.setId(ctx.idCache.uniqueId(node, "node", 1));
+			node.setId("node" + n);
 			node.setSize(new Dimension(NODE_SIZE, NODE_SIZE));
 		});
 	}
 	
-	private SEdge generateEdge(String sourceId, String targetId, Context ctx) {
+	private SEdge generateEdge(String sourceId, String targetId, int n) {
 		return new SEdge(edge -> {
-			edge.setId(ctx.idCache.uniqueId(edge, "edge", 1));
+			edge.setId("edge" + n);
 			edge.setSourceId(sourceId);
 			edge.setTargetId(targetId);
 		});
-	}
-	
-	private static class Context {
-		IdCache<SModelElement> idCache;
 	}
 
 }

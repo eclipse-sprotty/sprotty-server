@@ -46,6 +46,7 @@ import org.eclipse.sprotty.ILayoutEngine;
 
 import com.google.common.collect.Maps;
 
+import org.eclipse.sprotty.Action;
 import org.eclipse.sprotty.BoundsAware;
 import org.eclipse.sprotty.Dimension;
 import org.eclipse.sprotty.EdgeLayoutable;
@@ -86,16 +87,16 @@ public class ElkLayoutEngine implements ILayoutEngine {
 	 * {@link SprottyLayoutConfigurator}.
 	 */
 	@Override
-	public void layout(SModelRoot root) {
+	public void layout(SModelRoot root, Action cause) {
 		if (root instanceof SGraph) {
-			layout((SGraph) root, null);
+			layout((SGraph) root, null, cause);
 		}
 	}
 
 	/**
 	 * Compute a layout for a graph with the given configurator (or {@code null} to use only default settings).
 	 */
-	public void layout(SGraph sgraph, SprottyLayoutConfigurator configurator) {
+	public void layout(SGraph sgraph, SprottyLayoutConfigurator configurator, Action cause) {
 		LayoutContext context = transformGraph(sgraph);
 		if (configurator != null) {
 			ElkUtil.applyVisitors(context.elkGraph, configurator);

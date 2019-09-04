@@ -22,6 +22,7 @@ import java.util.Set;
 import org.eclipse.elk.alg.force.options.ForceOptions;
 import org.eclipse.elk.core.options.CoreOptions;
 import org.eclipse.elk.graph.ElkGraphElement;
+import org.eclipse.sprotty.Action;
 import org.eclipse.sprotty.SGraph;
 import org.eclipse.sprotty.SModelElement;
 import org.eclipse.sprotty.SModelRoot;
@@ -34,14 +35,14 @@ public class GraphLayoutEngine extends ElkLayoutEngine {
 	private final Set<String> selection = new HashSet<>();
 	
 	@Override
-	public void layout(SModelRoot root) {
+	public void layout(SModelRoot root, Action cause) {
 		if (root instanceof SGraph) {
 			SprottyLayoutConfigurator configurator = new SprottyLayoutConfigurator();
 			configurator.configureByType("graph")
 					.setProperty(CoreOptions.ALGORITHM, ForceOptions.ALGORITHM_ID)
 					.setProperty(CoreOptions.RANDOM_SEED, 0)
 					.setProperty(ForceOptions.ITERATIONS, 1000);
-			layout((SGraph) root, configurator);
+			layout((SGraph) root, configurator, cause);
 		}
 	}
 	
