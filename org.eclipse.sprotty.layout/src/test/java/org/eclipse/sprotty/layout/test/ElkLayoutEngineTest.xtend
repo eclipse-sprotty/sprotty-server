@@ -16,6 +16,12 @@
 package org.eclipse.sprotty.layout.test
 
 import com.google.inject.Inject
+import org.eclipse.elk.core.math.ElkPadding
+import org.eclipse.elk.core.math.KVector
+import org.eclipse.elk.core.math.KVectorChain
+import org.eclipse.elk.core.options.CoreOptions
+import org.eclipse.elk.graph.ElkNode
+import org.eclipse.sprotty.Action
 import org.eclipse.sprotty.Dimension
 import org.eclipse.sprotty.Point
 import org.eclipse.sprotty.SCompartment
@@ -27,11 +33,6 @@ import org.eclipse.sprotty.SNode
 import org.eclipse.sprotty.SPort
 import org.eclipse.sprotty.layout.ElkLayoutEngine
 import org.eclipse.sprotty.layout.SprottyLayoutConfigurator
-import org.eclipse.elk.core.math.ElkPadding
-import org.eclipse.elk.core.math.KVector
-import org.eclipse.elk.core.math.KVectorChain
-import org.eclipse.elk.core.options.CoreOptions
-import org.eclipse.elk.graph.ElkNode
 import org.junit.Test
 
 import static extension org.eclipse.sprotty.SModelUtil.*
@@ -48,14 +49,14 @@ class ElkLayoutEngineTest extends AbstractElkTest {
 			return config
 		}
 		
-		override layout(SModelRoot model) {
-			layout(model as SGraph, configurator)
+		override layout(SModelRoot model, Action cause) {
+			layout(model as SGraph, configurator, cause)
 		}
 		
 		def layout(SGraph model, (SprottyLayoutConfigurator)=>void initialize) {
 			val config = getConfigurator
 			initialize.apply(config)
-			layout(model, config)
+			layout(model, config, null)
 		}
 		
 		def getTransformedGraph(SGraph model) {

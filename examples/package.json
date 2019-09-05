@@ -5,7 +5,7 @@
   "dependencies": {
     "bootstrap": "^4.3.1",
     "reflect-metadata": "^0.1.13",
-    "sprotty": "file:/Users/spoenemann/github/sprotty/sprotty"
+    "sprotty": "next"
   },
   "devDependencies": {
     "babel-plugin-syntax-dynamic-import": "^6.18.0",

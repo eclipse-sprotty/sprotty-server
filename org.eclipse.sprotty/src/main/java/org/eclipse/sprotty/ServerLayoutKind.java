@@ -13,6 +13,14 @@ public enum ServerLayoutKind {
 	 * Layout information stored in the model will be overwritten.
 	 */
 	AUTOMATIC, 
+
+	/**
+	 * The server re-layouts the diagram interactively. In ELK, <em>interactive</em> means
+	 * that the order is not calculated but derived from the positions of the nodes. This
+	 * is close to a partial layout.  
+	 * The layout information must be stored in the model and will be overwritten on layout. 
+	 */
+	INTERACTIVE, 
 	
 	/**
 	 * The server re-layouts the diagram only if manually triggered by a <code>LayoutAction</code>.

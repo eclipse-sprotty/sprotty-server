@@ -25,15 +25,14 @@ public interface ILayoutEngine {
 	/**
 	 * Compute a layout for the given model and modify the model accordingly.
 	 */
-	public void layout(SModelRoot root);
+	public void layout(SModelRoot root, Action cause);
 	
 	/**
 	 * An implementation that does nothing.
 	 */
 	public static class NullImpl implements ILayoutEngine {
 		@Override
-		public void layout(SModelRoot root) {
+		public void layout(SModelRoot root, Action cause) {
 		}
 	}
-
 }

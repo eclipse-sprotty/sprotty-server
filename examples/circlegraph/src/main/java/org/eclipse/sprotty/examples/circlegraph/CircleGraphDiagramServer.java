@@ -40,7 +40,7 @@ public class CircleGraphDiagramServer extends DefaultDiagramServer {
 			SGraph model = (SGraph) getModel();
 			GraphLayoutEngine layoutEngine = (GraphLayoutEngine) getLayoutEngine();
 			layoutEngine.setSelection(selection.getSelectedElementsIDs());
-			layoutEngine.layout(model);
+			layoutEngine.layout(model, action);
 			dispatch(new UpdateModelAction(model));
 			dispatch(new FitToScreenAction(fitToScreen -> {
 				fitToScreen.setMaxZoom(1.0);

@@ -23,7 +23,7 @@ import org.eclipse.sprotty.util.IdCache
  * Convenient functions for generating sprotty diagrams.
  * 
  * @deprecated Use the constructors with the lambda parameter for convenient and 
- * readable construction and the {@link IdCache} to provide unique id's.
+ * readable construction and the {@link IdCache} to guarantee unique id's.
  */
 @Deprecated
 final class SModelUtil {
