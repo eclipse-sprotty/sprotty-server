@@ -71,11 +71,17 @@ class LanguageAwareDiagramServer extends DefaultDiagramServer implements ILangua
 	
 	override SModelRoot generate(ILanguageServerAccess.Context context, IssueProvider issueProvider) {
 		val status = getServerStatus(context, issueProvider)
-		this.status = status
+		setStatus(status)
 		val root = if (shouldGenerate(status)) {
-			val generatorContext = createDiagramGeneratorContext(context, this, issueProvider)
-			val diagramGenerator = diagramGeneratorProvider.get
-			diagramGenerator.generate(generatorContext)
+			try {
+				val generatorContext = createDiagramGeneratorContext(context, this, issueProvider)
+				val diagramGenerator = diagramGeneratorProvider.get
+				diagramGenerator.generate(generatorContext)
+			} catch (Exception exc) {
+				setStatus(new ServerStatus(FATAL, 'Error generating diagram. See language server log for details.'))
+				LOG.error('''Error generating diagram for «context.resource.URI»:''',exc)
+				null			
+			}
 		} else {
 			null
 		}
