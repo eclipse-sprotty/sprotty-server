@@ -97,9 +97,10 @@ abstract class SShapeElement extends SModelElement implements BoundsAware {
  */
 @Accessors
 @ToString(skipNulls = true)
-class SNode extends SShapeElement implements Layouting, EdgeLayoutable  {
+class SNode extends SShapeElement implements Layouting, EdgeLayoutable, Selectable  {
 	String layout
 	EdgePlacement edgePlacement
+	boolean selected
 
 	new() {
 		type = 'node'
@@ -115,7 +116,9 @@ class SNode extends SShapeElement implements Layouting, EdgeLayoutable  {
  */
 @Accessors
 @ToString(skipNulls = true)
-class SPort extends SShapeElement {
+class SPort extends SShapeElement implements Selectable {
+	boolean selected
+	
 	new() {
 		type = 'port'
 	}
@@ -132,10 +135,11 @@ class SPort extends SShapeElement {
  */
 @Accessors
 @ToString(skipNulls = true)
-class SEdge extends SModelElement {
+class SEdge extends SModelElement implements Selectable {
 	String sourceId
 	String targetId
 	List<Point> routingPoints
+	boolean selected
 
 	new() {
 		type = 'edge'
@@ -151,10 +155,11 @@ class SEdge extends SModelElement {
  */
 @Accessors
 @ToString(skipNulls = true)
-class SLabel extends SShapeElement implements Alignable, EdgeLayoutable {
+class SLabel extends SShapeElement implements Alignable, EdgeLayoutable, Selectable {
 	String text
 	Point alignment
 	EdgePlacement edgePlacement
+	boolean selected
 
 	new() {
 		type = 'label'
