@@ -59,10 +59,12 @@ class DiagramGeneratorTest extends AbstractDiagramServerTest {
     		    id = "graph"
     		    children = ArrayList (
     		      SNode [
+    		        selected = false
     		        type = "node"
     		        id = "foo"
     		      ],
     		      SNode [
+    		        selected = false
     		        type = "node"
     		        id = "bar"
     		      ]

@@ -228,6 +228,7 @@ class ElkLayoutEngineTest extends AbstractElkTest {
 			      y = 10.0
 			    ]
 			  )
+			  selected = false
 			  type = "edge"
 			  id = "g/node1/edge1"
 			]
@@ -276,6 +277,7 @@ class ElkLayoutEngineTest extends AbstractElkTest {
 			      y = -20.0
 			    ]
 			  )
+			  selected = false
 			  type = "edge"
 			  id = "g/node1/edge0"
 			]
@@ -324,6 +326,7 @@ class ElkLayoutEngineTest extends AbstractElkTest {
 			      y = 10.0
 			    ]
 			  )
+			  selected = false
 			  type = "edge"
 			  id = "g/node1/edge1"
 			]
@@ -372,6 +375,7 @@ class ElkLayoutEngineTest extends AbstractElkTest {
 			      y = 10.0
 			    ]
 			  )
+			  selected = false
 			  type = "edge"
 			  id = "g/node0/edge1"
 			]
