@@ -350,15 +350,18 @@ public class DefaultDiagramServer implements IDiagramServer {
 			Action action = message.getAction();
 			if (action instanceof ResponseAction) {
 				ResponseAction response = (ResponseAction) action;
-				CompletableFuture<ResponseAction> future = requests.get(response.getResponseId());
-	            if (future != null) {
-	                this.requests.remove(response.getResponseId());
-	                future.complete(response);
-	                return;
-	            }
-	            if (LOG.isInfoEnabled()) {
-	            	LOG.info("No matching request for response:\n" + action);
-	            }
+				String id = response.getResponseId();
+				if (!Strings.isNullOrEmpty(id)) {
+					CompletableFuture<ResponseAction> future = requests.get(id);
+		            if (future != null) {
+		                this.requests.remove(id);
+		                future.complete(response);
+		                return;
+		            }
+		            if (LOG.isInfoEnabled()) {
+		            	LOG.info("No matching request for response:\n" + action);
+		            }
+				}
 	        }
 			handleAction(action);
 		}
