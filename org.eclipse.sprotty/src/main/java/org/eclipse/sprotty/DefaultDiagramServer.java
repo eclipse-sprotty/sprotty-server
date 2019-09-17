@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2018 TypeFox and others.
+ * Copyright (c) 2017-2019 TypeFox and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -52,6 +52,8 @@ public class DefaultDiagramServer implements IDiagramServer {
 	
 	private ILayoutEngine layoutEngine;
 	
+	private ComputedBoundsApplicator computedBoundsApplicator;
+	
 	private IPopupModelFactory popupModelFactory;
 	
 	private IDiagramSelectionListener diagramSelectionListener;
@@ -61,8 +63,6 @@ public class DefaultDiagramServer implements IDiagramServer {
 	private IDiagramOpenListener diagramOpenListener;
 	
 	private boolean needsClientLayout = true;
-	
-	private ServerLayoutKind serverLayoutKind = ServerLayoutKind.AUTOMATIC;
 	
 	private final Map<String, CompletableFuture<ResponseAction>> requests = new HashMap<>();
 	
@@ -79,7 +79,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 	private String lastSubmittedModelType;
 
 	private SModelCloner smodelCloner;
-	
+
 	public DefaultDiagramServer() {
 		currentRoot = new SModelRoot();
 		currentRoot.setType("NONE");
@@ -131,6 +131,15 @@ public class DefaultDiagramServer implements IDiagramServer {
 	@Inject
 	public void setLayoutEngine(ILayoutEngine engine) {
 		this.layoutEngine = engine;
+	}
+	
+	protected ComputedBoundsApplicator getComputedBoundsApplicator() {
+		return computedBoundsApplicator;
+	}
+	
+	@Inject
+	public void setComputedBoundsApplicator(ComputedBoundsApplicator computedBoundsApplicator) {
+		this.computedBoundsApplicator = computedBoundsApplicator;
 	}
 	
 	protected IPopupModelFactory getPopupModelFactory() {
@@ -217,9 +226,6 @@ public class DefaultDiagramServer implements IDiagramServer {
 		if (newRoot == null)
 			throw new IllegalArgumentException("updateModel() cannot be called with null");
 		synchronized(modelLock) {
-			if (getServerLayoutKind(newRoot) == ServerLayoutKind.AUTOMATIC) {
-				LayoutUtil.copyLayoutData(currentRoot, newRoot);
-			}
 			currentRoot = newRoot;
 			newRoot.setRevision(++revision);
 		}
@@ -264,30 +270,13 @@ public class DefaultDiagramServer implements IDiagramServer {
 	}
 	
 	/**
-	 * Whether and when the server needs to compute the layout of parts of the model. The layout is computed
-	 * with the layout engine configured with {@link #setLayoutEngine(ILayoutEngine)}, so returning {@code true}
-	 * here makes sense only if such an engine is available.
-	 *
-	 * <p>The default implementation returns the value configured with {@link #setServerLayoutKind(ServerLayoutKind)},
-	 * but this can be overridden to determine the value depending on the given model. The initial value
-	 * is {@code false}.</p>
-	 */
-	protected ServerLayoutKind getServerLayoutKind(SModelRoot root) {
-		return this.serverLayoutKind;
-	}
-	
-	public void setServerLayoutKind(ServerLayoutKind value) {
-		this.serverLayoutKind = value;
-	}
-	
-	/**
 	 * Submit a new or updated model to the client. If client layout is required, a {@link RequestBoundsAction}
 	 * is sent, otherwise either a {@link SetModelAction} or an {@link UpdateModelAction} is sent depending on
 	 * the {@code update} parameter.
 	 */
 	protected CompletableFuture<Void> submitModel(SModelRoot newRoot, boolean update, Action cause) {
 		if (needsClientLayout(newRoot)) {
-			if (getServerLayoutKind(newRoot) == ServerLayoutKind.NONE) {
+			if (!getLayoutEngine().needsServerLayout(newRoot, cause)) {
 				// In this case the client won't send us the computed bounds
 				dispatch(new RequestBoundsAction(newRoot));
 				IModelUpdateListener listener = getModelUpdateListener();
@@ -300,7 +289,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 					} else {
 						SModelRoot model = handle(response);
 						if (model != null)
-							doSubmitModel(model, true, cause);
+							doSubmitModel(model, true, response);
 					}
 					return null;
 				});
@@ -312,13 +301,9 @@ public class DefaultDiagramServer implements IDiagramServer {
 	}
 	
 	private void doSubmitModel(SModelRoot newRoot, boolean update, Action cause) {
-		ServerLayoutKind layoutKind = getServerLayoutKind(newRoot);
-		if (layoutKind == ServerLayoutKind.AUTOMATIC 
-				|| layoutKind == ServerLayoutKind.INTERACTIVE) {
-			ILayoutEngine layoutEngine = getLayoutEngine();
-			if (layoutEngine != null) {
-				layoutEngine.layout(newRoot, cause);
-			}
+		ILayoutEngine layoutEngine = getLayoutEngine();
+		if (layoutEngine.needsServerLayout(newRoot, cause)) {
+			layoutEngine.layout(newRoot, cause);
 		}
 		synchronized (modelLock) {
 			if (newRoot.getRevision() == revision) {
@@ -420,7 +405,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 		synchronized(modelLock) {
 			SModelRoot model = getModel();
 			if (model.getRevision() == computedBounds.getRevision()) {
-				LayoutUtil.applyBounds(model, computedBounds);
+				getComputedBoundsApplicator().applyBounds(model, computedBounds);
 				return model;
 			}
 		}
@@ -519,23 +504,17 @@ public class DefaultDiagramServer implements IDiagramServer {
 	 * Called when a {@link LayoutAction} is received.
 	 */
 	protected void handle(LayoutAction action) {
-		ServerLayoutKind layoutKind = getServerLayoutKind(currentRoot);
-		if (layoutKind != ServerLayoutKind.NONE) {
-			ILayoutEngine layoutEngine = getLayoutEngine();
-			if (layoutEngine != null) {
-				// Clone the current model, as it has already been sent to the client with the old revision
-				SModelCloner cloner = getSModelCloner();
-				SModelRoot newRoot = cloner.clone(getModel());
-				synchronized(modelLock) {
-					newRoot.setRevision(++revision);
-					currentRoot = newRoot;
-				}
-				// Don't execute layout twice
-				if (getServerLayoutKind(newRoot) != ServerLayoutKind.AUTOMATIC) {
-					layoutEngine.layout(newRoot, action);
-				}
-				doSubmitModel(newRoot, true, action);
+		ILayoutEngine layoutEngine = getLayoutEngine();
+		if (layoutEngine.needsServerLayout(getModel(), action)) {
+			// Clone the current model, as it has already been sent to the client with the old revision
+			SModelCloner cloner = getSModelCloner();
+			SModelRoot newRoot = cloner.clone(getModel());
+			synchronized(modelLock) {
+				newRoot.setRevision(++revision);
+				currentRoot = newRoot;
 			}
+			layoutEngine.layout(newRoot, action);
+			doSubmitModel(newRoot, true, action);
 		}
 	}
 	

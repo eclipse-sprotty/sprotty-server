@@ -60,7 +60,7 @@ class ElkLayoutEngineTest extends AbstractElkTest {
 		}
 		
 		def getTransformedGraph(SGraph model) {
-			return transformGraph(model).elkGraph
+			return transformGraph(model, null).elkGraph
 		}
 		
 	}

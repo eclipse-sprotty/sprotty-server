@@ -213,7 +213,8 @@ class SetBoundsAction implements Action {
 @ToString(skipNulls = true)
 class ElementAndBounds {
     String elementId
-    Bounds newBounds
+    Point newPosition
+	Dimension newSize
 	
 	new() {}
 	new(Consumer<ElementAndBounds> initializer) {
@@ -497,8 +498,21 @@ class ServerStatusAction implements Action {
 @EqualsHashCode
 @ToString(skipNulls=true)
 class LayoutAction implements Action {
+	
+	enum LayoutType { FULL, INCREMENTAL }
+	
 	public static val KIND = 'layout'
 	String kind = KIND
+	
+	String layoutType = LayoutType.FULL.toString
+	
+	new() {}
+	new(Consumer<LayoutAction> initializer) {
+		initializer.accept(this)
+	}
+	new(LayoutType layoutType) {
+		this.layoutType = layoutType.toString
+	}
 }
 
 /**

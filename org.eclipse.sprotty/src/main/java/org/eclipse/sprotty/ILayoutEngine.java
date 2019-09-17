@@ -28,11 +28,22 @@ public interface ILayoutEngine {
 	public void layout(SModelRoot root, Action cause);
 	
 	/**
+	 * Decide whether layout needs to be performed on the given <code>root</code>
+	 * as an effect of the given <code>cause</code> 
+	 */
+	public boolean needsServerLayout(SModelRoot root, Action cause);
+	
+	/**
 	 * An implementation that does nothing.
 	 */
 	public static class NullImpl implements ILayoutEngine {
 		@Override
 		public void layout(SModelRoot root, Action cause) {
+		}
+
+		@Override
+		public boolean needsServerLayout(SModelRoot root, Action cause) {
+			return false;
 		}
 	}
 }
