@@ -79,11 +79,6 @@ public class ElkLayoutEngine implements ILayoutEngine {
 	
 	protected final ElkGraphFactory factory = ElkGraphFactory.eINSTANCE;
 	
-	@Override
-	public boolean needsServerLayout(SModelRoot root, Action cause) {
-		return true;
-	}
-	
 	/**
 	 * Compute a layout for a graph. The default implementation uses only default settings for all layout
 	 * options (see <a href="https://www.eclipse.org/elk/reference.html">layout options reference</a>).

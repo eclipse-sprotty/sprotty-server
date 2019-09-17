@@ -51,7 +51,6 @@ public class DiagramServerProvider implements IDiagramServer.Provider {
 	
 	private DefaultDiagramServer createServer(String clientId) {
 		DefaultDiagramServer server = provider.get();
-		server.setNeedsClientLayout(false);
 		server.setClientId(clientId);
 		SGraph graph = graphGenerator.generateGraph();
 		server.setModel(graph);

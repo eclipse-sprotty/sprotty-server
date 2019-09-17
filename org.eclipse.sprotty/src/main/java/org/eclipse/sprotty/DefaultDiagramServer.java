@@ -30,6 +30,9 @@ import org.apache.log4j.Logger;
 
 import com.google.common.base.Strings;
 
+
+import static org.eclipse.sprotty.DiagramOptions.*;
+
 /**
  * The default diagram server implementation. It realizes the same message protocol as the
  * TypeScript class {@code LocalModelSource}.
@@ -63,6 +66,8 @@ public class DefaultDiagramServer implements IDiagramServer {
 	private IDiagramOpenListener diagramOpenListener;
 	
 	private boolean needsClientLayout = true;
+	
+	private boolean needsServerLayout = false;
 	
 	private final Map<String, CompletableFuture<ResponseAction>> requests = new HashMap<>();
 	
@@ -255,20 +260,38 @@ public class DefaultDiagramServer implements IDiagramServer {
 	
 	/**
 	 * Whether the client needs to compute the layout of parts of the model. This affects the behavior or
-	 * {@link #submitModel(SModelRoot, boolean)}.
+	 * {@link #submitModel(SModelRoot, boolean, Action)}.
 	 * 
-	 * <p>The default implementation returns the value configured with {@link #setNeedsClientLayout(boolean)},
-	 * but this can be overridden to determine the value depending on the given model. The initial value
-	 * is {@code true}.</p>
+	 * <p>By default, this is initialized from the <code>ViewerOptions</code> that are received with the
+	 * {@link RequestModelAction} from the client.</p>
 	 */
 	protected boolean needsClientLayout(SModelRoot root) {
 		return needsClientLayout;
 	}
 	
+	/**
+	 * @deprecated the field is now initialized with the value from the <code>ViewerOptions</code> that 
+	 * are received with the {@link RequestModelAction} from the client.
+	 */
+	@Deprecated
 	public void setNeedsClientLayout(boolean value) {
 		this.needsClientLayout = value;
 	}
 	
+	/**
+	 * Whether the server needs to compute the layout of parts of the model. This affects the behavior or
+	 * {@link #submitModel(SModelRoot, boolean, Action)}.
+	 * 
+	 * <p>By default, this is initialized from the <code>ViewerOptions</code> that are received with the
+	 * {@link RequestModelAction} from the client.</p>
+	 * 
+	 * @param root the model
+	 * @param cause the current action.
+	 */
+	protected boolean needsServerLayout(SModelRoot root, Action cause) {
+		return needsServerLayout;
+	}
+		
 	/**
 	 * Submit a new or updated model to the client. If client layout is required, a {@link RequestBoundsAction}
 	 * is sent, otherwise either a {@link SetModelAction} or an {@link UpdateModelAction} is sent depending on
@@ -276,7 +299,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 	 */
 	protected CompletableFuture<Void> submitModel(SModelRoot newRoot, boolean update, Action cause) {
 		if (needsClientLayout(newRoot)) {
-			if (!getLayoutEngine().needsServerLayout(newRoot, cause)) {
+			if (!needsServerLayout(newRoot, cause)) {
 				// In this case the client won't send us the computed bounds
 				dispatch(new RequestBoundsAction(newRoot));
 				IModelUpdateListener listener = getModelUpdateListener();
@@ -302,7 +325,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 	
 	private void doSubmitModel(SModelRoot newRoot, boolean update, Action cause) {
 		ILayoutEngine layoutEngine = getLayoutEngine();
-		if (layoutEngine.needsServerLayout(newRoot, cause)) {
+		if (needsServerLayout(newRoot, cause)) {
 			layoutEngine.layout(newRoot, cause);
 		}
 		synchronized (modelLock) {
@@ -388,14 +411,32 @@ public class DefaultDiagramServer implements IDiagramServer {
 	 * Called when a {@link RequestModelAction} is received.
 	 */
 	protected void handle(RequestModelAction request) {
+		copyOptions(request);
+		submitModel(getModel(), false, request);
+	}
+	
+	protected void copyOptions(RequestModelAction request) {
 		Map<String, String> options = request.getOptions();
 		if (options != null) {
 			setOptions(options);
-			String needsClientLayout = options.get("needsClientLayout");
+			String needsClientLayout = options.get(OPTION_NEEDS_CLIENT_LAYOUT);
 			if (needsClientLayout != null && !needsClientLayout.isEmpty())
-				setNeedsClientLayout(Boolean.parseBoolean(needsClientLayout));
+				this.needsClientLayout = Boolean.parseBoolean(needsClientLayout);
+			String needsServerLayout = options.get(OPTION_NEEDS_SERVER_LAYOUT);
+			if (needsServerLayout!= null && !needsServerLayout.isEmpty()) {
+				boolean value = Boolean.parseBoolean(needsServerLayout);
+				if (value) {
+					if (this.getLayoutEngine() == null) {
+						LOG.error("Client demands server-side layout but the ILayoutEngine is not set. Switching server-side layout off.");
+						value = false;
+					}
+				} else {
+					if (this.getLayoutEngine() != null) 
+						LOG.warn("ILayoutEngine is set but client ignores server-side layout. Switching server-side layout off.");
+				}
+				this.needsServerLayout = value;
+			}
 		}
-		submitModel(getModel(), false, request);
 	}
 	
 	/**
@@ -505,7 +546,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 	 */
 	protected void handle(LayoutAction action) {
 		ILayoutEngine layoutEngine = getLayoutEngine();
-		if (layoutEngine.needsServerLayout(getModel(), action)) {
+		if (needsServerLayout(getModel(), action)) {
 			// Clone the current model, as it has already been sent to the client with the old revision
 			SModelCloner cloner = getSModelCloner();
 			SModelRoot newRoot = cloner.clone(getModel());
