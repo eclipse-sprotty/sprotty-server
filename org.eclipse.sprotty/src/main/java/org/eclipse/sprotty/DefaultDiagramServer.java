@@ -545,7 +545,6 @@ public class DefaultDiagramServer implements IDiagramServer {
 	 * Called when a {@link LayoutAction} is received.
 	 */
 	protected void handle(LayoutAction action) {
-		ILayoutEngine layoutEngine = getLayoutEngine();
 		if (needsServerLayout(getModel(), action)) {
 			// Clone the current model, as it has already been sent to the client with the old revision
 			SModelCloner cloner = getSModelCloner();
@@ -554,7 +553,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 				newRoot.setRevision(++revision);
 				currentRoot = newRoot;
 			}
-			layoutEngine.layout(newRoot, action);
+			// the actual layout is performed in doSubmitModel
 			doSubmitModel(newRoot, true, action);
 		}
 	}
