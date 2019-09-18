@@ -1,2 +1,11 @@
 tasks:
   - init: "./gradlew build"
+github:
+  prebuilds:
+    master: true
+    branches: true
+    pullRequests: true
+    pullRequestsFromForks: false
+    addComment: true
+    addBadge: false
+    addLabel: prebuilt-in-gitpod
