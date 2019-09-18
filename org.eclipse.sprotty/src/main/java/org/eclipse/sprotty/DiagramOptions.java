@@ -18,4 +18,6 @@ package org.eclipse.sprotty;
 public interface DiagramOptions {
 	String OPTION_SOURCE_URI = "sourceUri";
 	String OPTION_DIAGRAM_TYPE = "diagramType";
+	String OPTION_NEEDS_CLIENT_LAYOUT = "needsClientLayout";
+	String OPTION_NEEDS_SERVER_LAYOUT = "needsServerLayout";
 }

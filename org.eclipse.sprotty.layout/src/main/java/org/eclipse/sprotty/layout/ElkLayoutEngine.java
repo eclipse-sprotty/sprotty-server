@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2018 TypeFox and others.
+ * Copyright (c) 2017-2019 TypeFox and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -42,14 +42,11 @@ import org.eclipse.elk.graph.properties.IProperty;
 import org.eclipse.elk.graph.properties.Property;
 import org.eclipse.elk.graph.util.ElkGraphUtil;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.sprotty.ILayoutEngine;
-
-import com.google.common.collect.Maps;
-
 import org.eclipse.sprotty.Action;
 import org.eclipse.sprotty.BoundsAware;
 import org.eclipse.sprotty.Dimension;
 import org.eclipse.sprotty.EdgeLayoutable;
+import org.eclipse.sprotty.ILayoutEngine;
 import org.eclipse.sprotty.Layouting;
 import org.eclipse.sprotty.Point;
 import org.eclipse.sprotty.SEdge;
@@ -59,6 +56,8 @@ import org.eclipse.sprotty.SModelElement;
 import org.eclipse.sprotty.SModelRoot;
 import org.eclipse.sprotty.SNode;
 import org.eclipse.sprotty.SPort;
+
+import com.google.common.collect.Maps;
 
 /**
  * Layout engine that uses the <a href="https://www.eclipse.org/elk/">Eclipse Layout Kernel (ELK)</a>.
@@ -97,7 +96,7 @@ public class ElkLayoutEngine implements ILayoutEngine {
 	 * Compute a layout for a graph with the given configurator (or {@code null} to use only default settings).
 	 */
 	public void layout(SGraph sgraph, SprottyLayoutConfigurator configurator, Action cause) {
-		LayoutContext context = transformGraph(sgraph);
+		LayoutContext context = transformGraph(sgraph, cause);
 		if (configurator != null) {
 			ElkUtil.applyVisitors(context.elkGraph, configurator);
 		}
@@ -108,10 +107,10 @@ public class ElkLayoutEngine implements ILayoutEngine {
 	/**
 	 * Transform a sprotty graph to an ELK graph, including all contents.
 	 */
-	protected LayoutContext transformGraph(SGraph sgraph) {
-		LayoutContext context = new LayoutContext();
+	protected LayoutContext transformGraph(SGraph sgraph, Action cause) {
+		LayoutContext context = new LayoutContext(cause);
 		context.sgraph = sgraph;
-		ElkNode rootNode = createGraph(sgraph);
+		ElkNode rootNode = createGraph(sgraph, context);
 		context.elkGraph = rootNode;
 		context.shapeMap.put(sgraph, rootNode);
 		processChildren(sgraph, rootNode, context);
@@ -122,7 +121,7 @@ public class ElkLayoutEngine implements ILayoutEngine {
 	/**
 	 * Create a root ELK node for the given sprotty graph.
 	 */
-	protected ElkNode createGraph(SGraph sgraph) {
+	protected ElkNode createGraph(SGraph sgraph, LayoutContext context) {
 		ElkNode elkGraph = factory.createElkNode();
 		elkGraph.setIdentifier(SprottyLayoutConfigurator.toElkId(sgraph.getId()));
 		elkGraph.setProperty(P_TYPE, sgraph.getType());
@@ -552,6 +551,11 @@ public class ElkLayoutEngine implements ILayoutEngine {
 		public final Map<SModelElement, SModelElement> parentMap = Maps.newHashMap();
 		public final Map<SModelElement, ElkShape> shapeMap = Maps.newLinkedHashMap();
 		public final Map<SEdge, ElkEdge> edgeMap = Maps.newLinkedHashMap();
+		public final Action cause;
+		
+		public LayoutContext(Action cause) {
+			this.cause = cause;
+		}
 	}
 
 }

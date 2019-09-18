@@ -57,8 +57,7 @@ class LanguageAwareDiagramServer extends DefaultDiagramServer implements ILangua
 		if (model.type == 'NONE' && diagramLanguageServer !== null) {
 			if (!request.requestId.nullOrEmpty)
 				LOG.warn("Model requests are not supported by the Xtext diagram server.")
-			if (request.options !== null)
-				options = request.options
+			copyOptions(request)
 			diagramLanguageServer.diagramUpdater.updateDiagram(this)
 		} else {
 			super.handle(request)

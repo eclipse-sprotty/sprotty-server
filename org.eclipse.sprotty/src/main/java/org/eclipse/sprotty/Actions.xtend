@@ -165,7 +165,7 @@ class RequestBoundsAction implements RequestAction<ComputedBoundsAction> {
 /**
  * Sent from the client to the server to transmit the result of bounds computation as a response
  * to a {@link RequestBoundsAction}. If the server is responsible for parts of the layout
- * (see {@link DefaultDiagramServer#getServerLayoutKind(SModelRoot)}), it can do so after applying
+ * (see {@link DefaultDiagramServer#needsServerLayout(SModelRoot,Action)}), it can do so after applying
  * the computed bounds received with this action. Otherwise there is no need to send the computed
  * bounds to the server, so they can be processed locally by the client.
  */
@@ -213,7 +213,8 @@ class SetBoundsAction implements Action {
 @ToString(skipNulls = true)
 class ElementAndBounds {
     String elementId
-    Bounds newBounds
+    Point newPosition
+	Dimension newSize
 	
 	new() {}
 	new(Consumer<ElementAndBounds> initializer) {
@@ -497,8 +498,21 @@ class ServerStatusAction implements Action {
 @EqualsHashCode
 @ToString(skipNulls=true)
 class LayoutAction implements Action {
+	
+	enum LayoutType { FULL, INCREMENTAL }
+	
 	public static val KIND = 'layout'
 	String kind = KIND
+	
+	String layoutType = LayoutType.FULL.toString
+	
+	new() {}
+	new(Consumer<LayoutAction> initializer) {
+		initializer.accept(this)
+	}
+	new(LayoutType layoutType) {
+		this.layoutType = layoutType.toString
+	}
 }
 
 /**

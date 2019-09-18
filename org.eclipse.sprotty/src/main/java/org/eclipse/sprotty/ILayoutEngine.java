@@ -17,8 +17,7 @@ package org.eclipse.sprotty;
 
 /**
  * A layout engine is able to compute layout information for a model. Invoked by {@link DefaultDiagramServer}.
- * Use {@link DefaultDiagramServer#setServerLayoutKind(ServerLayoutKind)} to decide whether and when a layout
- * is performed.
+ * The client decides in the {@link RequestModelAction} whether a layout is performed on the server.
  */
 public interface ILayoutEngine {
 	
