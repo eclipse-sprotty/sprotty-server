@@ -64,7 +64,8 @@ export default () => {
         configureModelElement(context, 'node', CustomNode, CircleNodeView);
         configureModelElement(context, 'edge', CustomEdge, PolylineEdgeView);
         configureViewerOptions(context, {
-            needsClientLayout: false
+            needsClientLayout: false,
+            needsServerLayout: true
         });
     });
 
