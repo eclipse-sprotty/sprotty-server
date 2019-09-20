@@ -31,7 +31,8 @@ public class ComputedBoundsApplicator {
 				BoundsAware bae = (BoundsAware) element;
 				if (b.getNewPosition() != null)
 					bae.setPosition(new Point(b.getNewPosition().getX(), b.getNewPosition().getY()));
-				bae.setSize(new Dimension(b.getNewSize().getWidth(), b.getNewSize().getHeight()));
+				if (b.getNewSize() != null)
+					bae.setSize(new Dimension(b.getNewSize().getWidth(), b.getNewSize().getHeight()));
 			}
 		}
 		for (ElementAndAlignment a: action.getAlignments()) {
