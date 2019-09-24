@@ -15,10 +15,14 @@
  ********************************************************************************/
 package org.eclipse.sprotty;
 
+import org.apache.log4j.Logger;
+
 /**
  * Copies bounds from a <code>ComputedBoundsAction</code> to the given <code>root</code>
  */
 public class ComputedBoundsApplicator {
+	
+	private static final Logger LOG = Logger.getLogger(ComputedBoundsAction.class);
 	
 	/**
 	 * Apply the computed bounds from the given action to the model.
@@ -31,7 +35,10 @@ public class ComputedBoundsApplicator {
 				BoundsAware bae = (BoundsAware) element;
 				if (b.getNewPosition() != null)
 					bae.setPosition(new Point(b.getNewPosition().getX(), b.getNewPosition().getY()));
-				bae.setSize(new Dimension(b.getNewSize().getWidth(), b.getNewSize().getHeight()));
+				if (b.getNewSize() == null)
+					LOG.error("ElementAndBounds#newSize is null. Make sure you are using a current version of sprotty on the client");
+				else 
+					bae.setSize(new Dimension(b.getNewSize().getWidth(), b.getNewSize().getHeight()));
 			}
 		}
 		for (ElementAndAlignment a: action.getAlignments()) {
