@@ -19,7 +19,7 @@ import "reflect-metadata";
 import createContainer from './di.config';
 import {
     TYPES, IActionDispatcher, WebSocketDiagramServer, RequestModelAction, FitToScreenAction,
-    LayoutAction, SelectAllAction
+    LayoutAction, SelectAllAction, createRandomId
 } from 'sprotty';
 
 import './circlegraph.css';
@@ -29,6 +29,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 const container = createContainer();
 
 const server = container.get<WebSocketDiagramServer>(TYPES.ModelSource);
+server.clientId = createRandomId(16);
 const websocket = new WebSocket('ws://localhost:8080/circlegraph');
 server.listen(websocket);
 
