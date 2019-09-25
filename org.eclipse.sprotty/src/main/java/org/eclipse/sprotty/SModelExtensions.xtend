@@ -47,41 +47,41 @@ interface Scrollable {
 }
 
 interface Zoomable {
-	def double getZoom() 	
+	def double getZoom()
 }
 
 /**
  * Used to identify model elements that specify a <em>client</em> layout to apply to their children.
- * 
+ *
  * The children of such elements are ignored by the server-side layout engine because they are
- * already handled by the client. 
- * 
+ * already handled by the client.
+ *
  * The layout can be further customized using {@link LayoutOptions} on the container or the children.
- * The {@link LayoutOptions} are cascading similar to CSS styles, i.e. they are merged along the 
- * containment path of a child. 
+ * The {@link LayoutOptions} are cascading similar to CSS styles, i.e. they are merged along the
+ * containment path of a child.
  */
 interface Layouting {
 	enum LayoutKind {
-		/** 
-		 * Elements are aligned in left to right direction 
+		/**
+		 * Elements are aligned in left to right direction
 		 */
-		hbox, 
-		
-		/** 
-		 * Elements are aligned in top to bottom direction 
+		hbox,
+
+		/**
+		 * Elements are aligned in top to bottom direction
 		 */
-		 vbox, 
-		
-		/** 
-		 * Elements are aligned on top of each other left to right direction 
+		 vbox,
+
+		/**
+		 * Elements are aligned on top of each other
 		 */
 		stack
 	}
-	
+
 	def void setLayout(LayoutKind layout) {
 		this.setLayout(layout.toString)
 	}
-	
+
 	def String getLayout()
 	def void setLayout(String layout)
 	def LayoutOptions getLayoutOptions()
@@ -92,5 +92,5 @@ interface Layouting {
  */
 interface EdgeLayoutable {
  	def EdgePlacement getEdgePlacement()
- 	def void setEdgePlacement(EdgePlacement edgePlacement)  
+ 	def void setEdgePlacement(EdgePlacement edgePlacement)
 }
