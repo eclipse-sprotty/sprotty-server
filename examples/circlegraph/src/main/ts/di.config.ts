@@ -16,53 +16,31 @@
 
 import { Container, ContainerModule } from 'inversify';
 import {
-    defaultModule, TYPES, configureViewerOptions, SGraphView, PolylineEdgeView, ConsoleLogger,
-    LogLevel, WebSocketDiagramServer, boundsModule, moveModule, selectModule, undoRedoModule, viewportModule,
-    exportModule, CircularNode, configureModelElement, SGraph, SEdge, ActionHandlerRegistry,
-    LayoutAction, SelectionResult, ViewportResult, updateModule, graphModule, routingModule,
-    modelSourceModule, selectFeature, moveFeature, createRandomId
+    TYPES, configureViewerOptions, SGraphView, PolylineEdgeView, ConsoleLogger, LogLevel,
+    WebSocketDiagramServer, CircularNode, configureModelElement, SGraph, SEdge, LayoutAction,
+    SelectionResult, ViewportResult, selectFeature, moveFeature, loadDefaultModules,
+    configureActionHandler
 } from 'sprotty';
 import { CircleNodeView } from './views';
 
-class CustomNode extends CircularNode {
-    hasFeature(feature: symbol): boolean {
-        if (feature === moveFeature)
-            return false;
-        else
-            return super.hasFeature(feature);
-    }
-}
-
-class CustomEdge extends SEdge {
-    hasFeature(feature: symbol): boolean {
-        if (feature === selectFeature)
-            return false;
-        else
-            return super.hasFeature(feature);
-    }
-}
-
-class CircleGraphDiagramServer extends WebSocketDiagramServer {
-    initialize(registry: ActionHandlerRegistry): void {
-        super.initialize(registry);
-        registry.register(LayoutAction.KIND, this);
-        registry.register(SelectionResult.KIND, this);
-        registry.register(ViewportResult.KIND, this);
-        registry.register('layoutSelection', this);
-
-        this.clientId = createRandomId(16);
-    }
-}
-
 export default () => {
     const circleGraphModule = new ContainerModule((bind, unbind, isBound, rebind) => {
-        bind(TYPES.ModelSource).to(CircleGraphDiagramServer).inSingletonScope();
+        bind(TYPES.ModelSource).to(WebSocketDiagramServer).inSingletonScope();
         rebind(TYPES.ILogger).to(ConsoleLogger).inSingletonScope();
         rebind(TYPES.LogLevel).toConstantValue(LogLevel.warn);
+
         const context = { bind, unbind, isBound, rebind };
         configureModelElement(context, 'graph', SGraph, SGraphView);
-        configureModelElement(context, 'node', CustomNode, CircleNodeView);
-        configureModelElement(context, 'edge', CustomEdge, PolylineEdgeView);
+        configureModelElement(context, 'node', CircularNode, CircleNodeView, {
+            disable: [moveFeature]
+        });
+        configureModelElement(context, 'edge', SEdge, PolylineEdgeView, {
+            disable: [selectFeature]
+        });
+        configureActionHandler(context, LayoutAction.KIND, TYPES.ModelSource);
+        configureActionHandler(context, SelectionResult.KIND, TYPES.ModelSource);
+        configureActionHandler(context, ViewportResult.KIND, TYPES.ModelSource);
+        configureActionHandler(context, 'layoutSelection', TYPES.ModelSource);
         configureViewerOptions(context, {
             needsClientLayout: false,
             needsServerLayout: true
@@ -70,7 +48,7 @@ export default () => {
     });
 
     const container = new Container();
-    container.load(defaultModule, selectModule, moveModule, boundsModule, undoRedoModule, viewportModule,
-        exportModule, updateModule, graphModule, routingModule, modelSourceModule, circleGraphModule);
+    loadDefaultModules(container);
+    container.load(circleGraphModule);
     return container;
 };
