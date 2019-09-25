@@ -65,7 +65,7 @@ import com.google.common.collect.Maps;
  * <p>The layout engine must be initialized once during the lifecycle of the application by calling
  * {@link #initialize(ILayoutMetaDataProvider...)}. The arguments of that method should be all meta data
  * providers of the layout algorithms that should be used by this layout engine,
- * e.g. {@link org.eclipse.elk.alg.layered.options.LayeredMetaDataProvider}.</p>
+ * e.g. <code>org.eclipse.elk.alg.layered.options.LayeredMetaDataProvider</code>.</p>
  */
 public class ElkLayoutEngine implements ILayoutEngine {
 	
@@ -337,7 +337,7 @@ public class ElkLayoutEngine implements ILayoutEngine {
 	 * This requires the meta data providers of the referenced algorithms to be registered
 	 * using {@link #initialize(ILayoutMetaDataProvider...)} before any layout is performed, e.g. on
 	 * application start. Alternatively, you can use a specific layout algorithm directly, e.g.
-	 * {@link org.eclipse.elk.alg.layered.LayeredLayoutProvider}.
+	 * <code>org.eclipse.elk.alg.layered.LayeredLayoutProvider</code>.
 	 */
 	public void setEngine(IGraphLayoutEngine engine) {
 		if (engine == null)
@@ -557,5 +557,4 @@ public class ElkLayoutEngine implements ILayoutEngine {
 			this.cause = cause;
 		}
 	}
-
 }
