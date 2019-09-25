@@ -213,17 +213,84 @@ class SButton extends SShapeElement implements BoundsAware {
 @Accessors
 @ToString(skipNulls = true)
 class LayoutOptions {
+	/**
+	 * Left-side padding of an element inside its container.
+	 */
 	Double paddingLeft
+
+	/**
+	 * Right-side padding of an element inside its container.
+	 */
 	Double paddingRight
+	
+	/**
+	 * Top-side padding of an element inside its container.
+	 */
 	Double paddingTop
+
+	/**
+	 * Bottom-side padding of an element inside its container.
+	 */
 	Double paddingBottom
+	
+	/**
+	 * Factor by which a container should be bigger than all its children.
+	 * 
+	 * E.g. choose <code>2</code> for diamond shaped figures or <code>sqrt(2)</code> 
+	 * for ellipses.
+	 */
 	Double paddingFactor
+	
+	/**
+	 * If <code>true</code>, a container gets the minimum size to enclose all its 
+	 * children. 
+	 */
 	Boolean resizeContainer
+	
+	/**
+	 * The vertical gap between consecutive children. For 'vbox' layout only.
+	 */
 	Double vGap
+
+	/**
+	 * The horizontal gap between consecutive children. For 'hbox' layout only.
+	 */
 	Double hGap
+	
+	/**
+	 * The vertical alignment of the children. For 'hbox' and 'stack' layout only.
+	 */
+	enum VAlignKind {
+		top, center, bottom
+	}
+
 	String vAlign
+	
+	def setVAlign(VAlignKind vAlignKind) {
+		setVAlign(vAlignKind.toString)
+	}
+
+	/**
+	 * The horizontal alignment of the children. for 'vbox' and 'stack' layout only. 
+	 */
+	enum HAlignKind {
+		left, center, right
+	}
+	
 	String hAlign
+
+	def setHAlign(HAlignKind hAlignKind) {
+		setHAlign(hAlignKind.toString)
+	}
+	
+	/** 
+	 * The minimum width of an element 
+	 */
 	Double minWidth
+
+	/** 
+	 * The minimum height of an element 
+	 */
 	Double minHeight
 
 	new() {}
