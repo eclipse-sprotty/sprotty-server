@@ -299,8 +299,6 @@ public class DefaultDiagramServer implements IDiagramServer {
 			if (value && getLayoutEngine() == null) {
 				LOG.error("Client demands server-side layout but the ILayoutEngine is not set. Switching server-side layout off.");
 				value = false;
-			} else if (!value && getLayoutEngine() != null) { 
-				LOG.info("ILayoutEngine is set, but client ignores server-side layout.");
 			}
 			return value;
 		}
@@ -323,11 +321,15 @@ public class DefaultDiagramServer implements IDiagramServer {
 			} else {
 				return request(new RequestBoundsAction(newRoot)).handle((response, exception) -> {
 					if (exception != null) {
-						LOG.error(exception);
+						LOG.error("RequestBoundsAction failed with an exception.", exception);
 					} else {
-						SModelRoot model = handle(response);
-						if (model != null)
-							doSubmitModel(model, true, response);
+						try {
+							SModelRoot model = handle(response);
+							if (model != null)
+								doSubmitModel(model, true, cause);
+						} catch (Exception exc) {
+							LOG.error("Exception while processing ComputedBoundsAction.", exc);
+						}
 					}
 					return null;
 				});
