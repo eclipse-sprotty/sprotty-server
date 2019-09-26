@@ -21,4 +21,6 @@ dependencies {
 	compile "javax.inject:javax.inject:1"
     compile "org.eclipse.xtend:org.eclipse.xtend.lib:${versions.xtext}"
     compile "log4j:log4j:${versions.log4j}"
+    testCompile "junit:junit:${versions.junit}"
+    testCompile "com.google.inject:guice:${versions.guice}"
 }
