@@ -1,4 +1,3 @@
-package org.eclipse.sprotty
 /********************************************************************************
  * Copyright (c) 2017-2018 TypeFox and others.
  *
@@ -14,6 +13,7 @@ package org.eclipse.sprotty
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+package org.eclipse.sprotty
 
 import java.lang.reflect.Modifier
 import java.util.List
