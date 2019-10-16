@@ -1,11 +1,13 @@
 # sprotty-server
 Libraries to build [Sprotty diagram](https://github.com/eclipse/sprotty) servers in Java/Xtend.
 
+The version history is documented in the [CHANGELOG](https://github.com/eclipse/sprotty-server/blob/master/CHANGELOG.md).
+
 ## Structure
 - `org.eclipse.sprotty`: Java bindings for the Sprotty API.
 - `org.eclipse.sprotty.layout`: Server-based layout using the [Eclipse Layout Kernel](https://www.eclipse.org/elk/) framework
 - `org.eclipse.sprotty.server`: Base library for standalone Sprotty servers.
-- `org.eclipse.sprotty.xtext`: Glue code to integrate Sprotty diagrams with Xtext-based Language Servers. Enhances 
+- `org.eclipse.sprotty.xtext`: Glue code to integrate Sprotty diagrams with Xtext-based Language Servers. Enhances
 the LSP to communicate Sprotty Actions. Allows fully synchronized diagrams on language artifacts.
 
 ## Build
@@ -17,7 +19,7 @@ Pre-build Maven artifacts are available from [Sonatype OSS](https://oss.sonatype
 
 ## See also
 
-- [sprotty](https://github.com/eclipse/sprotty) the client part of the Sprotty framework. 
+- [sprotty](https://github.com/eclipse/sprotty) the client part of the Sprotty framework.
 - [sprotty-theia](https://github.com/eclipse/sprotty-theia) integrate Sprotty diagrams in extensions to the [Theia IDE](https://theia-ide.org)
 
 ## References
