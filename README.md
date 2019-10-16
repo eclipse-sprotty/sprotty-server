@@ -11,9 +11,12 @@ The version history is documented in the [CHANGELOG](https://github.com/eclipse/
 the LSP to communicate Sprotty Actions. Allows fully synchronized diagrams on language artifacts.
 
 ## Build
+
 ```bash
 ./gradlew build
 ```
+
+The project is built on [jenkins.eclipse.org/sprotty](https://jenkins.eclipse.org/sprotty/).
 
 Pre-build Maven artifacts are available from [Sonatype OSS](https://oss.sonatype.org/content/repositories/snapshots/org/eclipse/sprotty/).
 
