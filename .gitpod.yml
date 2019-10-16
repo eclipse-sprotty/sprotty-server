@@ -1,5 +1,8 @@
+ports:
+  - port: 8080
 tasks:
-  - init: "./gradlew build"
+  - init: ./gradlew build
+    command: ./gradlew runExamples
 github:
   prebuilds:
     master: true
