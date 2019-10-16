@@ -25,23 +25,22 @@ apply from: "${rootDir}/gradle/versions.gradle"
 
 configure(subprojects.findAll {it.file('src').exists()}) {
 	repositories {
-		maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }	
 		maven {
 			name 'maven-repo'
 			url 'https://repo.maven.apache.org/maven2/'
 		}
 	}
-	
+
 	group = 'org.eclipse.sprotty'
 	version = rootProject.version
-	
+
 	apply plugin: 'java'
 	apply plugin: 'org.xtext.xtend'
 	apply plugin: 'eclipse'
 	apply plugin: 'idea'
-	
+
 	apply from: "${rootDir}/gradle/java-compiler-settings.gradle"
-	
+
 	if (name.contains('example')) {
 		javadocJar.enabled = false
 	} else {
