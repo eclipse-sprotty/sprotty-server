@@ -279,7 +279,8 @@ class SelectAllAction implements Action {
 
 /**
  * Triggered when the user requests the viewer to center on the current model. The resulting
- * CenterCommand changes the scroll setting of the viewport accordingly and resets the zoom to its default.
+ * CenterCommand changes the scroll setting of the viewport accordingly.
+ * It also resets the zoom to its default if retainZoom is false.
  * This action can also be sent from the model source to the client in order to perform such a
  * viewport change programmatically.
  */
@@ -292,6 +293,7 @@ class CenterAction implements Action {
 	
 	List<String> elementIds
 	boolean animate = true
+	boolean retainZoom = false
 	
 	new() {}
 	new(Consumer<CenterAction> initializer) {
