@@ -29,7 +29,7 @@ import javax.inject.Inject;
 import org.apache.log4j.Logger;
 
 import com.google.common.base.Strings;
-
+import com.google.common.collect.Sets;
 
 import static org.eclipse.sprotty.DiagramOptions.*;
 
@@ -193,6 +193,11 @@ public class DefaultDiagramServer implements IDiagramServer {
 		Consumer<ActionMessage> remoteEndpoint = getRemoteEndpoint();
 		if (remoteEndpoint != null) {
 			remoteEndpoint.accept(new ActionMessage(getClientId(), action));
+			if (action instanceof SelectAction) {
+				handle((SelectAction) action);
+			} else if (action instanceof SelectAllAction) {
+				handle((SelectAllAction) action);
+			}
 		}
 	}
 	
@@ -315,6 +320,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 			if (!needsServerLayout(newRoot, cause)) {
 				// In this case the client won't send us the computed bounds
 				dispatch(new RequestBoundsAction(newRoot));
+				updateSelection(newRoot, update);
 				IModelUpdateListener listener = getModelUpdateListener();
 				if (listener != null)
 					listener.modelSubmitted(newRoot, this);
@@ -326,7 +332,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 						try {
 							SModelRoot model = handle(response);
 							if (model != null)
-								doSubmitModel(model, true, cause);
+								doSubmitModel(model, update, cause);
 						} catch (Exception exc) {
 							LOG.error("Exception while processing ComputedBoundsAction.", exc);
 						}
@@ -360,11 +366,20 @@ public class DefaultDiagramServer implements IDiagramServer {
 					dispatch(new SetModelAction(newRoot));
 				}
 				lastSubmittedModelType = modelType;
+				updateSelection(newRoot, update);
 				IModelUpdateListener listener = getModelUpdateListener();
 				if (listener != null) {
 					listener.modelSubmitted(newRoot, this);
 				}
 			}
+		}
+	}
+
+	private void updateSelection(SModelRoot newRoot, boolean update) {
+		if (update) {
+			selectedElements.retainAll(new SModelIndex(newRoot).allIds());
+		} else {
+			selectedElements.clear();
 		}
 	}
 	
@@ -477,7 +492,6 @@ public class DefaultDiagramServer implements IDiagramServer {
 	 * Called when a {@link SelectAction} is received.
 	 */
 	protected void handle(SelectAction action) {
-			selectedElements.clear();
 		if (action.getDeselectedElementsIDs() != null)
 			selectedElements.removeAll(action.getDeselectedElementsIDs());
 		if (action.getSelectedElementsIDs() != null)
