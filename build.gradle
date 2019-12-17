@@ -14,12 +14,17 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
+import java.time.format.DateTimeFormatter
+import java.time.LocalDateTime
+
 buildscript {
 	repositories.jcenter()
 	dependencies {
 		classpath 'org.xtext:xtext-gradle-plugin:1.0.19'
 	}
 }
+
+ext.buildTime = DateTimeFormatter.ofPattern('yyyyMMdd-HHmm').format(LocalDateTime.now())
 
 apply from: "${rootDir}/gradle/versions.gradle"
 
@@ -46,6 +51,7 @@ configure(subprojects.findAll {it.file('src').exists()}) {
 	} else {
 		apply plugin: 'maven'
 		apply from: "${rootDir}/gradle/maven-deployment.gradle"
+		apply from: "${rootDir}/gradle/manifest-gen.gradle"
 	}
 }
 
