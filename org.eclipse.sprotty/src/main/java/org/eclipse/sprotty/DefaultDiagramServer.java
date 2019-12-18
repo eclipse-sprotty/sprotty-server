@@ -15,6 +15,7 @@
  ********************************************************************************/
 package org.eclipse.sprotty;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -194,9 +195,9 @@ public class DefaultDiagramServer implements IDiagramServer {
 		if (remoteEndpoint != null) {
 			remoteEndpoint.accept(new ActionMessage(getClientId(), action));
 			if (action instanceof SelectAction) {
-				handle((SelectAction) action);
+				updateSelection((SelectAction) action);
 			} else if (action instanceof SelectAllAction) {
-				handle((SelectAllAction) action);
+				updateSelection((SelectAllAction) action);
 			}
 		}
 	}
@@ -320,7 +321,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 			if (!needsServerLayout(newRoot, cause)) {
 				// In this case the client won't send us the computed bounds
 				dispatch(new RequestBoundsAction(newRoot));
-				updateSelection(newRoot, update);
+				updateSelection(newRoot, update, cause);
 				IModelUpdateListener listener = getModelUpdateListener();
 				if (listener != null)
 					listener.modelSubmitted(newRoot, this);
@@ -366,7 +367,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 					dispatch(new SetModelAction(newRoot));
 				}
 				lastSubmittedModelType = modelType;
-				updateSelection(newRoot, update);
+				updateSelection(newRoot, update, cause);
 				IModelUpdateListener listener = getModelUpdateListener();
 				if (listener != null) {
 					listener.modelSubmitted(newRoot, this);
@@ -375,11 +376,42 @@ public class DefaultDiagramServer implements IDiagramServer {
 		}
 	}
 
-	private void updateSelection(SModelRoot newRoot, boolean update) {
+	private void updateSelection(SelectAction action) {
+		if (action.getDeselectedElementsIDs() != null) {
+			selectedElements.removeAll(action.getDeselectedElementsIDs());
+		}
+		if (action.getSelectedElementsIDs() != null) {
+			selectedElements.addAll(action.getSelectedElementsIDs());
+		}
+
+		fireSelectionChanged(action);
+	}
+
+	private void updateSelection(SelectAllAction action) {
+		if (action.isSelect()) {
+			selectedElements.clear();
+			new SModelIndex(getModel()).allIds().forEach(selectedElements::add);
+		} else {
+			selectedElements.clear();
+		}
+
+		fireSelectionChanged(action);
+	}
+
+	private void updateSelection(SModelRoot newRoot, boolean update, Action cause) {
 		if (update) {
 			selectedElements.retainAll(new SModelIndex(newRoot).allIds());
 		} else {
 			selectedElements.clear();
+		}
+
+		fireSelectionChanged(cause);
+	}
+
+	private void fireSelectionChanged(Action cause) {
+		IDiagramSelectionListener selectionListener = getSelectionListener();
+		if (selectionListener != null) {
+			selectionListener.selectionChanged(cause, this);
 		}
 	}
 	
@@ -492,30 +524,14 @@ public class DefaultDiagramServer implements IDiagramServer {
 	 * Called when a {@link SelectAction} is received.
 	 */
 	protected void handle(SelectAction action) {
-		if (action.getDeselectedElementsIDs() != null)
-			selectedElements.removeAll(action.getDeselectedElementsIDs());
-		if (action.getSelectedElementsIDs() != null)
-			selectedElements.addAll(action.getSelectedElementsIDs());
-
-		IDiagramSelectionListener selectionListener = getSelectionListener();
-		if (selectionListener != null) {
-			selectionListener.selectionChanged(action, this);
-		}
+		updateSelection(action);
 	}
 	
 	/**
 	 * Called when a {@link SelectAllAction} is received.
 	 */
 	protected void handle(SelectAllAction action) {
-		if (action.isSelect())
-			new SModelIndex(getModel()).allIds().forEach(id -> selectedElements.add(id));
-		else
-			selectedElements.clear();
-		
-		IDiagramSelectionListener selectionListener = getSelectionListener();
-		if (selectionListener != null) {
-			selectionListener.selectionChanged(action, this);
-		}
+		updateSelection(action);
 	}
 	
 	/**
