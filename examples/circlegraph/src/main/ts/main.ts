@@ -30,7 +30,7 @@ const container = createContainer();
 
 const server = container.get<WebSocketDiagramServer>(TYPES.ModelSource);
 server.clientId = createRandomId(16);
-const websocket = new WebSocket('ws://localhost:8080/circlegraph');
+const websocket = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/circlegraph`)
 server.listen(websocket);
 
 const dispatcher = container.get<IActionDispatcher>(TYPES.IActionDispatcher);

@@ -22,7 +22,7 @@ pipeline {
     stages {
         stage('Build sprotty-server') {
             environment {
-                GRADLE_ARGS = "-PignoreTestFailures=true --refresh-dependencies --continue"
+                GRADLE_ARGS = "--no-daemon --refresh-dependencies --continue -PignoreTestFailures=true"
             }
             steps {
                 container('openjdk') {
