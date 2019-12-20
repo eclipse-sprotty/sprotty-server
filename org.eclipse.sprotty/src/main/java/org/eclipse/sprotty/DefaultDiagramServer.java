@@ -375,17 +375,20 @@ public class DefaultDiagramServer implements IDiagramServer {
 	}
 
 	private void updateSelection(SelectAction action) {
+		boolean selectionChanged = false;
 		if (action.getDeselectedElementsIDs() != null) {
-			selectedElements.removeAll(action.getDeselectedElementsIDs());
+			selectionChanged |= selectedElements.removeAll(action.getDeselectedElementsIDs());
 		}
 		if (action.getSelectedElementsIDs() != null) {
-			selectedElements.addAll(action.getSelectedElementsIDs());
+			selectionChanged |= selectedElements.addAll(action.getSelectedElementsIDs());
 		}
 
-		fireSelectionChanged(action);
+		if (selectionChanged)
+			fireSelectionChanged(action);
 	}
 
 	private void updateSelection(SelectAllAction action) {
+		int previousSize = selectedElements.size();
 		if (action.isSelect()) {
 			selectedElements.clear();
 			selectedElements.addAll(new SModelIndex(getModel()).allIds());
@@ -393,17 +396,20 @@ public class DefaultDiagramServer implements IDiagramServer {
 			selectedElements.clear();
 		}
 
-		fireSelectionChanged(action);
+		if (selectedElements.size() != previousSize)
+			fireSelectionChanged(action);
 	}
 
 	private void updateSelection(SModelRoot newRoot, boolean update, Action cause) {
+		boolean selectionChanged = false;
 		if (update) {
-			selectedElements.retainAll(new SModelIndex(newRoot).allIds());
+			selectionChanged = selectedElements.retainAll(new SModelIndex(newRoot).allIds());
 		} else {
 			selectedElements.clear();
 		}
 
-		fireSelectionChanged(cause);
+		if (selectionChanged)
+			fireSelectionChanged(cause);
 	}
 
 	private void fireSelectionChanged(Action cause) {
