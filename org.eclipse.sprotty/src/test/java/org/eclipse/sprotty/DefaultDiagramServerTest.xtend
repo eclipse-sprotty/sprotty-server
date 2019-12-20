@@ -22,6 +22,7 @@ import org.junit.Before
 import org.junit.Test
 
 import static org.junit.Assert.*
+import static java.util.Collections.*
 
 class DefaultDiagramServerTest {
 	
@@ -240,6 +241,106 @@ class DefaultDiagramServerTest {
 		assertEquals('''
 			ERROR: Exception while processing ComputedBoundsAction. (java.lang.NullPointerException)
 		'''.toString, logger.toString)
+	}
+	
+	/**
+	 * Selection state should be updated when dispatching and accepting {@link SelectAction}s.
+	 */
+	@Test
+	def void testSelect() {
+		val server = new TestSetup().createServer()
+		server.remoteEndpoint = []
+		server.model = new SModelRoot [
+			id = "root"
+			children = #[
+				new SNode[id = "node1"],
+				new SNode[id = "node2"]
+			]
+		]
+
+		val selectNode1 = new SelectAction [
+			selectedElementsIDs = #["node1"]
+			deselectedElementsIDs = #["node2"]
+		]
+
+		val selectNode2 = new SelectAction [
+			selectedElementsIDs = #["node2"]
+			deselectedElementsIDs = #["node1"]
+		]
+
+		server.accept(new ActionMessage[action = selectNode1])
+		assertEquals("Accept select", server.diagramState.selectedElements, singleton("node1"))
+		server.accept(new ActionMessage[action = selectNode2])
+		assertEquals("Accept select/deselect", server.diagramState.selectedElements, singleton("node2"))
+
+		server.dispatch(selectNode1)
+		assertEquals("Dispatch select", server.diagramState.selectedElements, singleton("node1"))
+		server.dispatch(selectNode2)
+		assertEquals("Dispatch select/deselect", server.diagramState.selectedElements, singleton("node2"))
+	}
+	
+	/**
+	 * Selection state should be updated when dispatching and accepting {@link SelectAllAction}s.
+	 */
+	@Test
+	def void testSelectAll() {
+		val server = new TestSetup().createServer()
+		server.remoteEndpoint = []
+		server.model = new SModelRoot [
+			id = "root"
+			children = #[
+				new SNode[id = "node1"],
+				new SNode[id = "node2"]
+			]
+		]
+
+		val allIds = #["root", "node1", "node2"].toSet
+
+		server.accept(new ActionMessage[action = new SelectAllAction[select = true]])
+		assertEquals("Accept select all", server.diagramState.selectedElements, allIds)
+		server.accept(new ActionMessage[action = new SelectAllAction[select = false]])
+		assertEquals("Accept deselect all", server.diagramState.selectedElements, emptySet)
+
+		server.dispatch(new SelectAllAction[select = true])
+		assertEquals("Dispatch select all", server.diagramState.selectedElements, allIds)
+		server.dispatch(new SelectAllAction[select = false])
+		assertEquals("Dispatch deselect all", server.diagramState.selectedElements, emptySet)
+	}
+	
+	/**
+	 * Setting a new model should clear any previous selection.
+	 */
+	@Test
+	def void testSelectSetModel() {
+		val server = new TestSetup().createServer()
+		server.model = new SModelRoot[id = "root"]
+		server.accept(new ActionMessage[action = new SelectAllAction[select = true]])
+		server.model = new SModelRoot[id = "root"]
+		assertEquals("Selection after set model", server.diagramState.selectedElements, emptySet)
+	}
+	
+	/**
+	 * Updating a model should retain the selection (but remove elements that do not exist anymore).
+	 */
+	 @Test
+	def void testSelectionUpdateModel() {
+		val server = new TestSetup().createServer()
+		server.model = new SModelRoot[
+			id = "root"
+			children = #[
+				new SNode[id = "node1"],
+				new SNode[id = "node2"]
+			]
+		]
+		server.accept(new ActionMessage[action = new SelectAllAction[select = true]])
+		server.updateModel(new SModelRoot[
+			id = "root"
+			children = #[
+				new SNode[id = "node1"],
+				new SNode[id = "node3"]
+			]
+		])
+		assertEquals("Selection after update", server.diagramState.selectedElements, #["root", "node1"].toSet)
 	}
 	
 	

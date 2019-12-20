@@ -15,7 +15,6 @@
  ********************************************************************************/
 package org.eclipse.sprotty;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -30,7 +29,6 @@ import javax.inject.Inject;
 import org.apache.log4j.Logger;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
 
 import static org.eclipse.sprotty.DiagramOptions.*;
 
@@ -390,7 +388,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 	private void updateSelection(SelectAllAction action) {
 		if (action.isSelect()) {
 			selectedElements.clear();
-			new SModelIndex(getModel()).allIds().forEach(selectedElements::add);
+			selectedElements.addAll(new SModelIndex(getModel()).allIds());
 		} else {
 			selectedElements.clear();
 		}
