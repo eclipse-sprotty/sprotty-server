@@ -35,8 +35,6 @@ import org.eclipse.sprotty.layout.ElkLayoutEngine
 import org.eclipse.sprotty.layout.SprottyLayoutConfigurator
 import org.junit.Test
 
-import static extension org.eclipse.sprotty.SModelUtil.*
-
 class ElkLayoutEngineTest extends AbstractElkTest {
 	
 	private static class TestEngine extends ElkLayoutEngine {
@@ -69,19 +67,40 @@ class ElkLayoutEngineTest extends AbstractElkTest {
 	
 	@Test
 	def void testTransformGraphElements() {
-		val model = create(SGraph, 'g') [
-			addChild(SNode) [
-				addChild(SLabel) [ text = 'Foo' ]
-				addChild(SPort) [
-					addChild(SLabel) [ text = 'Bar' ]
-				]
-			]
-			addChild(SNode)
-			addChild(SEdge) [
-				sourceId = 'g/node0/port1'
-				targetId = 'g/node1'
-				addChild(SLabel) [
-					text = 'Baz'
+		val model = new SGraph [
+			id = 'g'
+			children = #[
+				new SNode [
+					id = 'g/node0'
+					children = #[
+						new SLabel [
+							id ='g/node0/label0'
+							text = 'Foo'
+						],
+						new SPort [
+							id = 'g/node0/port1'
+							children = #[
+								new SLabel [
+									id = 'g/node0/port1/label0'
+									text = 'Bar'
+								]
+							]
+						]
+					]
+				],
+				new SNode [
+					id = 'g/node1'
+				],
+				new SEdge [
+					id = 'g/edge2'
+					sourceId = 'g/node0/port1'
+					targetId = 'g/node1'
+					children = #[
+						new SLabel [
+							id = 'g/edge2/label0'
+							text = 'Baz'
+						]
+					]
 				]
 			]
 		]
@@ -114,22 +133,41 @@ class ElkLayoutEngineTest extends AbstractElkTest {
 	
 	@Test
 	def void testTransformCompartments1() {
-		val model = create(SGraph, 'g') [
-			addChild(SNode) [
-				layout = 'vbox'
-				position = new Point(100, 100)
-				size = new Dimension(35, 35)
-				addChild(SLabel) // Skipped because the parent node has a client layout
-				addChild(SCompartment) [
-					layout = 'hbox'
-					position = new Point(0, 10)
-					size = new Dimension(5, 5)
-					addChild(SLabel) // Skipped because the parent compartment has a client layout
-				]
-				addChild(SCompartment) [
-					position = new Point(10, 10)
-					size = new Dimension(15, 15)
-					addChild(SLabel) [ text = "Foo" ]
+		val model = new SGraph [
+			id = 'g'
+			children = #[
+				new SNode [ n |
+					n.id = 'g/node0'
+					n.layout = 'vbox'
+					n.position = new Point(100, 100)
+					n.size = new Dimension(35, 35)
+					n.children = #[
+						new SLabel [ // Skipped because the parent node has a client layout
+							id = n.id + '/label0'
+						],
+						new SCompartment [ c |
+							c.id = n.id + '/comp1'
+							c.layout = 'hbox'
+							c.position = new Point(0, 10)
+							c.size = new Dimension(5, 5)
+							c.children = #[
+								new SLabel [ // Skipped because the parent compartment has a client layout
+									id = c.id + '/label0'
+								]
+							]
+						],
+						new SCompartment [ c |
+							c.id = n.id + '/comp2'
+							c.position = new Point(10, 10)
+							c.size = new Dimension(15, 15)
+							c.children = #[
+								new SLabel [
+									id = c.id + '/label0'
+									text = "Foo"
+								]
+							]
+						]
+					]
 				]
 			]
 		]
@@ -152,19 +190,33 @@ class ElkLayoutEngineTest extends AbstractElkTest {
 	
 	@Test
 	def void testTransformCompartments2() {
-		val model = create(SGraph, 'g') [
-			addChild(SNode) [
-				layout = 'vbox'
-				position = new Point(100, 100)
-				size = new Dimension(55, 55)
-				addChild(SCompartment) [
-					layout = 'hbox'
-					position = new Point(10, 10)
-					size = new Dimension(35, 35)
-					addChild(SCompartment) [
-						position = new Point(10, 10)
-						size = new Dimension(15, 15)
-						addChild(SNode)
+		val model = new SGraph [
+			id = 'g'
+			children = #[
+				new SNode [
+					id = 'g/node0'
+					layout = 'vbox'
+					position = new Point(100, 100)
+					size = new Dimension(55, 55)
+					children = #[
+						new SCompartment [
+							id = 'g/node0/comp0'
+							layout = 'hbox'
+							position = new Point(10, 10)
+							size = new Dimension(35, 35)
+							children = #[
+								new SCompartment [
+									id = 'g/node0/comp0/comp0'
+									position = new Point(10, 10)
+									size = new Dimension(15, 15)
+									children = #[
+										new SNode[
+											id = 'g/node0/comp0/comp0/node0'
+										]
+									]
+								]
+							]
+						]
 					]
 				]
 			]
@@ -188,21 +240,33 @@ class ElkLayoutEngineTest extends AbstractElkTest {
 	
 	@Test
 	def void testLayoutCrossHierarchyEdge1() {
-		val model = create(SGraph, 'g') [
-			addChild(SNode) [
-				position = new Point => [ x = 10; y = 10]
-				addChild(SNode) [
-					position = new Point => [ x = 10; y = 10]
-				]
-			]
-			addChild(SNode) [
-				position = new Point => [ x = 40; y = 10]
-				addChild(SNode) [
-					position = new Point => [ x = 10; y = 10]
-				]
-				addChild(SEdge) [   // Added as child of 'g' in the ELK graph
-					sourceId = 'g/node0/node0'
-					targetId = 'g/node1/node0'
+		val model = new SGraph [
+			id = 'g'
+			children = #[
+				new SNode [
+					id = 'g/node0'
+					position = new Point(10, 10)
+					children = #[
+						new SNode [
+							id = 'g/node0/node0'
+							position = new Point(10, 10)
+						]
+					]
+				],
+				new SNode [
+					id = 'g/node1'
+					position = new Point(40, 10)
+					children = #[
+						new SNode [
+							id = 'g/node1/node0'
+							position = new Point(10, 10)
+						],
+						new SEdge [ // Added as child of 'g' in the ELK graph
+							id = 'g/node1/edge1'
+							sourceId = 'g/node0/node0'
+							targetId = 'g/node1/node0'
+						]
+					]
 				]
 			]
 		]
@@ -237,21 +301,33 @@ class ElkLayoutEngineTest extends AbstractElkTest {
 	
 	@Test
 	def void testLayoutCrossHierarchyEdge2() {
-		val model = create(SGraph, 'g') [
-			addChild(SNode) [
-				position = new Point => [ x = 10; y = 10]
-				addChild(SNode) [
-					position = new Point => [ x = 10; y = 10]
-				]
-				addChild(SNode) [
-					position = new Point => [ x = 40; y = 10]
-				]
-			]
-			addChild(SNode) [
-				position = new Point => [ x = 10; y = 40]
-				addChild(SEdge) [   // Added as child of 'g/node0' in the ELK graph
-					sourceId = 'g/node0/node0'
-					targetId = 'g/node0/node1'
+		val model = new SGraph [
+			id = 'g'
+			children = #[
+				new SNode [
+					id = 'g/node0'
+					position = new Point(10, 10)
+					children = #[
+						new SNode [
+							id = 'g/node0/node0'
+							position = new Point(10, 10)
+						],
+						new SNode [
+							id = 'g/node0/node1'
+							position = new Point(40, 10)
+						]
+					]
+				],
+				new SNode [
+					id = 'g/node1'
+					position = new Point(10, 40)
+					children = #[
+						new SEdge [ // Added as child of 'g/node0' in the ELK graph
+							id = 'g/node1/edge0'
+							sourceId = 'g/node0/node0'
+							targetId = 'g/node0/node1'
+						]
+					]
 				]
 			]
 		]
@@ -286,21 +362,33 @@ class ElkLayoutEngineTest extends AbstractElkTest {
 	
 	@Test
 	def void testLayoutCrossHierarchyEdge3() {
-		val model = create(SGraph, 'g') [
-			addChild(SNode) [
-				position = new Point => [ x = 10; y = 10]
-				addChild(SNode) [
-					position = new Point => [ x = 10; y = 10]
-				]
-			]
-			addChild(SNode) [
-				position = new Point => [ x = 40; y = 10]
-				addChild(SNode) [
-					position = new Point => [ x = 10; y = 10]
-				]
-				addChild(SEdge) [   // Added as child of 'g' in the ELK graph
-					sourceId = 'g/node1/node0'
-					targetId = 'g/node0/node0'
+		val model = new SGraph [
+			id = 'g'
+			children = #[
+				new SNode [
+					id = 'g/node0'
+					position = new Point(10, 10)
+					children = #[
+						new SNode [
+							id = 'g/node0/node0'
+							position = new Point(10, 10)
+						]
+					]
+				],
+				new SNode [
+					id = 'g/node1'
+					position = new Point(40, 10)
+					children = #[
+						new SNode [
+							id = 'g/node1/node0'
+							position = new Point(10, 10)
+						],
+						new SEdge [ // Added as child of 'g' in the ELK graph
+							id = 'g/node1/edge1'
+							sourceId = 'g/node1/node0'
+							targetId = 'g/node0/node0'
+						]
+					]
 				]
 			]
 		]
@@ -335,21 +423,33 @@ class ElkLayoutEngineTest extends AbstractElkTest {
 	
 	@Test
 	def void testLayoutCrossHierarchyEdge4() {
-		val model = create(SGraph, 'g') [
-			addChild(SNode) [
-				position = new Point => [ x = 10; y = 10]
-				addChild(SNode) [
-					position = new Point => [ x = 10; y = 10]
-				]
-				addChild(SEdge) [   // Added as child of 'g' in the ELK graph
-					sourceId = 'g/node0/node0'
-					targetId = 'g/node1/node0'
-				]
-			]
-			addChild(SNode) [
-				position = new Point => [ x = 40; y = 10]
-				addChild(SNode) [
-					position = new Point => [ x = 10; y = 10]
+		val model = new SGraph [
+			id = 'g'
+			children = #[
+				new SNode [
+					id = 'g/node0'
+					position = new Point(10, 10)
+					children = #[
+						new SNode [
+							id = 'g/node0/node0'
+							position = new Point(10, 10)
+						],
+						new SEdge [ // Added as child of 'g' in the ELK graph
+							id = 'g/node0/edge1'
+							sourceId = 'g/node0/node0'
+							targetId = 'g/node1/node0'
+						]
+					]
+				],
+				new SNode [
+					id = 'g/node1'
+					position = new Point(40, 10)
+					children = #[
+						new SNode [
+							id = 'g/node1/node0'
+							position = new Point(10, 10)
+						]
+					]
 				]
 			]
 		]
