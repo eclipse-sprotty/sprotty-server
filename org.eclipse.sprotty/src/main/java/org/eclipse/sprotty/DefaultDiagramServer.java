@@ -30,7 +30,6 @@ import org.apache.log4j.Logger;
 
 import com.google.common.base.Strings;
 
-
 import static org.eclipse.sprotty.DiagramOptions.*;
 
 /**
@@ -193,6 +192,11 @@ public class DefaultDiagramServer implements IDiagramServer {
 		Consumer<ActionMessage> remoteEndpoint = getRemoteEndpoint();
 		if (remoteEndpoint != null) {
 			remoteEndpoint.accept(new ActionMessage(getClientId(), action));
+			if (action instanceof SelectAction) {
+				updateSelection((SelectAction) action);
+			} else if (action instanceof SelectAllAction) {
+				updateSelection((SelectAllAction) action);
+			}
 		}
 	}
 	
@@ -315,6 +319,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 			if (!needsServerLayout(newRoot, cause)) {
 				// In this case the client won't send us the computed bounds
 				dispatch(new RequestBoundsAction(newRoot));
+				updateSelection(newRoot, update, cause);
 				IModelUpdateListener listener = getModelUpdateListener();
 				if (listener != null)
 					listener.modelSubmitted(newRoot, this);
@@ -326,7 +331,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 						try {
 							SModelRoot model = handle(response);
 							if (model != null)
-								doSubmitModel(model, true, cause);
+								doSubmitModel(model, update, cause);
 						} catch (Exception exc) {
 							LOG.error("Exception while processing ComputedBoundsAction.", exc);
 						}
@@ -360,11 +365,57 @@ public class DefaultDiagramServer implements IDiagramServer {
 					dispatch(new SetModelAction(newRoot));
 				}
 				lastSubmittedModelType = modelType;
+				updateSelection(newRoot, update, cause);
 				IModelUpdateListener listener = getModelUpdateListener();
 				if (listener != null) {
 					listener.modelSubmitted(newRoot, this);
 				}
 			}
+		}
+	}
+
+	private void updateSelection(SelectAction action) {
+		boolean selectionChanged = false;
+		if (action.getDeselectedElementsIDs() != null) {
+			selectionChanged |= selectedElements.removeAll(action.getDeselectedElementsIDs());
+		}
+		if (action.getSelectedElementsIDs() != null) {
+			selectionChanged |= selectedElements.addAll(action.getSelectedElementsIDs());
+		}
+
+		if (selectionChanged)
+			fireSelectionChanged(action);
+	}
+
+	private void updateSelection(SelectAllAction action) {
+		int previousSize = selectedElements.size();
+		if (action.isSelect()) {
+			selectedElements.clear();
+			selectedElements.addAll(new SModelIndex(getModel()).allIds());
+		} else {
+			selectedElements.clear();
+		}
+
+		if (selectedElements.size() != previousSize)
+			fireSelectionChanged(action);
+	}
+
+	private void updateSelection(SModelRoot newRoot, boolean update, Action cause) {
+		boolean selectionChanged = false;
+		if (update) {
+			selectionChanged = selectedElements.retainAll(new SModelIndex(newRoot).allIds());
+		} else {
+			selectedElements.clear();
+		}
+
+		if (selectionChanged)
+			fireSelectionChanged(cause);
+	}
+
+	private void fireSelectionChanged(Action cause) {
+		IDiagramSelectionListener selectionListener = getSelectionListener();
+		if (selectionListener != null) {
+			selectionListener.selectionChanged(cause, this);
 		}
 	}
 	
@@ -477,31 +528,14 @@ public class DefaultDiagramServer implements IDiagramServer {
 	 * Called when a {@link SelectAction} is received.
 	 */
 	protected void handle(SelectAction action) {
-			selectedElements.clear();
-		if (action.getDeselectedElementsIDs() != null)
-			selectedElements.removeAll(action.getDeselectedElementsIDs());
-		if (action.getSelectedElementsIDs() != null)
-			selectedElements.addAll(action.getSelectedElementsIDs());
-
-		IDiagramSelectionListener selectionListener = getSelectionListener();
-		if (selectionListener != null) {
-			selectionListener.selectionChanged(action, this);
-		}
+		updateSelection(action);
 	}
 	
 	/**
 	 * Called when a {@link SelectAllAction} is received.
 	 */
 	protected void handle(SelectAllAction action) {
-		if (action.isSelect())
-			new SModelIndex(getModel()).allIds().forEach(id -> selectedElements.add(id));
-		else
-			selectedElements.clear();
-		
-		IDiagramSelectionListener selectionListener = getSelectionListener();
-		if (selectionListener != null) {
-			selectionListener.selectionChanged(action, this);
-		}
+		updateSelection(action);
 	}
 	
 	/**

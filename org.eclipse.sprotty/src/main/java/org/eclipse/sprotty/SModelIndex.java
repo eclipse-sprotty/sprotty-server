@@ -17,6 +17,7 @@ package org.eclipse.sprotty;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Utility class that stores all model elements by their id. Use this for fast model element lookup.
@@ -62,7 +63,7 @@ public class SModelIndex {
 	/**
 	 * @return all IDs
 	 */
-	public Iterable<String> allIds() {
+	public Set<String> allIds() {
 		return index.keySet();
 	}
 	
