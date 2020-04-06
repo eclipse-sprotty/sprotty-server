@@ -18,8 +18,10 @@ package org.eclipse.sprotty.xtext.ls
 
 import com.google.inject.Inject
 import com.google.inject.Singleton
+import org.eclipse.emf.common.util.URI
+import org.eclipse.lsp4j.DocumentHighlightParams
 import org.eclipse.lsp4j.InitializeParams
-import org.eclipse.lsp4j.TextDocumentPositionParams
+import org.eclipse.lsp4j.VersionedTextDocumentIdentifier
 import org.eclipse.lsp4j.jsonrpc.Endpoint
 import org.eclipse.lsp4j.jsonrpc.services.ServiceEndpoints
 import org.eclipse.sprotty.ActionMessage
@@ -32,8 +34,6 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.ide.server.LanguageServerImpl
 import org.eclipse.xtext.ide.server.UriExtensions
 import org.eclipse.xtext.util.internal.Log
-import org.eclipse.emf.common.util.URI
-import org.eclipse.lsp4j.VersionedTextDocumentIdentifier
 
 /**
  * An extended language server that adds diagram-related messages to the
@@ -108,7 +108,7 @@ class DiagramLanguageServer extends LanguageServerImpl implements DiagramServerE
 	/**
 	 * Use documentHighlight to select element under cursor in the diagram.
 	 */
-	override documentHighlight(TextDocumentPositionParams params) {
+	override documentHighlight(DocumentHighlightParams params) {
 		val result = super.documentHighlight(params)
 		val URI uri = params.textDocument.uri.toUri
 		workspaceManager.doRead(uri) [ doc, resource |
