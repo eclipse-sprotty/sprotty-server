@@ -6,6 +6,13 @@ spec:
   - name: openjdk
     image: openjdk:8
     tty: true
+    resources:
+      limits:
+        memory: "2Gi"
+        cpu: "1"
+      requests:
+        memory: "2Gi"
+        cpu: "1"
 """
 
 pipeline {
