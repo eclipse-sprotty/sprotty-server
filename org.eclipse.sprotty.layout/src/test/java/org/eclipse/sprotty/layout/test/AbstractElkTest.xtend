@@ -54,11 +54,15 @@ abstract class AbstractElkTest {
 	}
 	
 	protected def void assertSerializedTo(EObject object, String expected) {
-		Assert.assertEquals(expected.trim, serialize(object).trim)
+		Assert.assertEquals(expected.toUnixLineEndings.trim, serialize(object).toUnixLineEndings.trim)
 	}
 	
 	protected def void assertSerializedTo(SModelElement element, String expected) {
-		Assert.assertEquals(expected.trim, element.toString.trim)
+		Assert.assertEquals(expected.toUnixLineEndings.trim, element.toString.toUnixLineEndings.trim)
 	}
 	
+	def String toUnixLineEndings(String s) {
+		s.replaceAll('\\r\\n', '\n')
+	}
+
 }
