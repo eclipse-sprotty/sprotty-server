@@ -240,7 +240,7 @@ class DefaultDiagramServerTest {
 		
 		assertEquals('''
 			ERROR: Exception while processing ComputedBoundsAction. (java.lang.NullPointerException)
-		'''.toString, logger.toString)
+		'''.toString.trim, logger.toString.trim)
 	}
 	
 	/**
