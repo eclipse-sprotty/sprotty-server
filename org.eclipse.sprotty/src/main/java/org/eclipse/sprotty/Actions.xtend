@@ -127,6 +127,7 @@ class UpdateModelAction implements Action {
 	
 	SModelRoot newRoot
 	Boolean animate
+	Action cause
 	
 	new() {}
 	new(Consumer<UpdateModelAction> initializer) {
@@ -135,6 +136,10 @@ class UpdateModelAction implements Action {
 	new(SModelRoot newRoot) {
 		this.newRoot = newRoot
 	}
+    new(SModelRoot newRoot, Action cause) {
+        this.newRoot = newRoot
+        this.cause = cause
+    }
 }
 
 /**

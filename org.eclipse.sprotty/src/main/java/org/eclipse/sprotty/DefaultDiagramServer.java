@@ -360,7 +360,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 					response.setResponseId(request.getRequestId());
 		            dispatch(response);
 		        } else if (update && modelType != null && modelType.equals(lastSubmittedModelType)) {
-					dispatch(new UpdateModelAction(newRoot));
+					dispatch(new UpdateModelAction(newRoot, cause));
 				} else {
 					dispatch(new SetModelAction(newRoot));
 				}
