@@ -45,6 +45,8 @@ class DiagramSelectionListener implements IDiagramSelectionListener {
 	}
 	
 	private def selectionChanged(SelectAction action, ILanguageAwareDiagramServer server) {
+		if (action.preventOpenSelection) 
+			return 
 		val diagramLanguageClient = server.diagramLanguageServer.client
 		if (diagramLanguageClient instanceof SyncDiagramClient) {
 			if (action.selectedElementsIDs !== null && action.selectedElementsIDs.size === 1)  {
