@@ -257,6 +257,12 @@ class SelectAction implements Action {
 	
 	List<String> selectedElementsIDs = emptyList
 	List<String> deselectedElementsIDs = emptyList
+	/**
+	 * If true, this select action does not cause the text editor selection 
+	 * to be updated in the LSP scenario. Avoids selection loops.
+	 * @see https://github.com/eclipse/sprotty-server/issues/73
+	 */
+	boolean preventOpenSelection = false 
 	
 	new() {}
 	new(Consumer<SelectAction> initializer) {

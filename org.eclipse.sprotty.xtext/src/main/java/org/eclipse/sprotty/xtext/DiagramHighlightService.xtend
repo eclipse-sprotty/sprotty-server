@@ -39,6 +39,7 @@ class DiagramHighlightService {
 			])
 			server.dispatch(new SelectAction [
 				selectedElementsIDs = #[traceable.id]
+				preventOpenSelection = true
 			])
 			server.dispatch(new FitToScreenAction [
 				maxZoom = 1.0
