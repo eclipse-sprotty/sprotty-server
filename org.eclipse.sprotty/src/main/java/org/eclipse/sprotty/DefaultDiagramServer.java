@@ -400,7 +400,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 			fireSelectionChanged(action);
 	}
 
-	private void updateSelection(SModelRoot newRoot, boolean update, Action cause) {
+	protected void updateSelection(SModelRoot newRoot, boolean update, Action cause) {
 		boolean selectionChanged = false;
 		if (update) {
 			selectionChanged = selectedElements.retainAll(new SModelIndex(newRoot).allIds());
