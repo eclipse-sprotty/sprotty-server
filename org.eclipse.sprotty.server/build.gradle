@@ -21,4 +21,5 @@ dependencies {
     compile project(':org.eclipse.sprotty')
     compile "com.google.code.gson:gson:${versions.gson}"
     compile "javax.websocket:javax.websocket-api:${versions.websocket}"
+    testCompile "junit:junit:${versions.junit}"
 }
