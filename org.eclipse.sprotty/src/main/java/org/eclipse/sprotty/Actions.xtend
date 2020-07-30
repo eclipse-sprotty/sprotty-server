@@ -50,6 +50,34 @@ interface ResponseAction extends Action {
 }
 
 /**
+ * A reject action is fired to indicate that a request must be rejected.
+ */
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls = true)
+class RejectAction implements ResponseAction {
+	public static val KIND = 'rejectRequest'
+	String kind = KIND
+
+	String message
+	String responseId
+	Object detail
+	
+	new() {}
+	new(Consumer<RejectAction> initializer) {
+		initializer.accept(this)
+	}
+	new(String message, String responseId) {
+		this(message, responseId, null)
+	}
+	new(String message, String responseId, Object detail) {
+		this.message = message
+		this.responseId = responseId
+		this.detail = detail
+	}
+}
+
+/**
  * Wrapper for actions when transferring them between server and client via an {@link IDiagramServer}.
  */
 @Accessors
@@ -539,6 +567,11 @@ class GetSelectionAction implements RequestAction<SelectionResult> {
 	String kind = KIND
 
 	String requestId
+	
+	new() {}
+	new(Consumer<GetSelectionAction> initializer) {
+		initializer.accept(this)
+	}
 }
 
 @Accessors
@@ -550,6 +583,11 @@ class SelectionResult implements ResponseAction {
 
 	List<String> selectedElementsIDs
 	String responseId
+	
+	new() {}
+	new(Consumer<SelectionResult> initializer) {
+		initializer.accept(this)
+	}
 }
 
 /**
@@ -563,6 +601,11 @@ class GetViewportAction implements RequestAction<ViewportResult> {
 	String kind = KIND
 
 	String requestId
+	
+	new() {}
+	new(Consumer<GetViewportAction> initializer) {
+		initializer.accept(this)
+	}
 }
 
 @Accessors
@@ -575,4 +618,9 @@ class ViewportResult implements ResponseAction {
 	Viewport viewport
 	Bounds canvasBounds
 	String responseId
+	
+	new() {}
+	new(Consumer<ViewportResult> initializer) {
+		initializer.accept(this)
+	}
 }

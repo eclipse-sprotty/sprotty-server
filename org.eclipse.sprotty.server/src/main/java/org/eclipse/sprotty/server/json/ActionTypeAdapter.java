@@ -30,6 +30,7 @@ import org.eclipse.sprotty.GetSelectionAction;
 import org.eclipse.sprotty.GetViewportAction;
 import org.eclipse.sprotty.LayoutAction;
 import org.eclipse.sprotty.OpenAction;
+import org.eclipse.sprotty.RejectAction;
 import org.eclipse.sprotty.RequestBoundsAction;
 import org.eclipse.sprotty.RequestExportSvgAction;
 import org.eclipse.sprotty.RequestModelAction;
@@ -89,6 +90,7 @@ public class ActionTypeAdapter extends PropertyBasedTypeAdapter<Action> {
 			addActionKind(GetViewportAction.KIND, GetViewportAction.class);
 			addActionKind(LayoutAction.KIND, LayoutAction.class);
 			addActionKind(OpenAction.KIND, OpenAction.class);
+			addActionKind(RejectAction.KIND, RejectAction.class);
 			addActionKind(RequestBoundsAction.KIND, RequestBoundsAction.class);
 			addActionKind(RequestExportSvgAction.KIND, RequestExportSvgAction.class);
 			addActionKind(RequestModelAction.KIND, RequestModelAction.class);

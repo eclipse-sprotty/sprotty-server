@@ -27,6 +27,7 @@ import java.util.function.Consumer;
 import javax.inject.Inject;
 
 import org.apache.log4j.Logger;
+import org.eclipse.sprotty.util.RejectException;
 
 import com.google.common.base.Strings;
 
@@ -212,6 +213,18 @@ public class DefaultDiagramServer implements IDiagramServer {
 		return future;
 	}
 	
+	protected void rejectRemoteRequest(Action action, Throwable exception) {
+		if (action instanceof RequestAction) {
+			RequestAction<?> request = (RequestAction<?>) action;
+			if (!Strings.isNullOrEmpty(request.getRequestId())) {
+				String message = exception.getMessage();
+				if (message == null)
+					message = exception.getClass().getSimpleName();
+				dispatch(new RejectAction(message, request.getRequestId()));
+			}
+		}
+	}
+	
 	/**
 	 * Generate a unique {@code requestId} for a request action.
 	 */
@@ -326,6 +339,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 			} else {
 				return request(new RequestBoundsAction(newRoot)).handle((response, exception) -> {
 					if (exception != null) {
+						rejectRemoteRequest(cause, exception);
 						LOG.error("RequestBoundsAction failed with an exception.", exception);
 					} else {
 						try {
@@ -333,6 +347,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 							if (model != null)
 								doSubmitModel(model, update, cause);
 						} catch (Exception exc) {
+							rejectRemoteRequest(cause, exc);
 							LOG.error("Exception while processing ComputedBoundsAction.", exc);
 						}
 					}
@@ -431,7 +446,14 @@ public class DefaultDiagramServer implements IDiagramServer {
 					CompletableFuture<ResponseAction> future = requests.get(id);
 		            if (future != null) {
 		                this.requests.remove(id);
-		                future.complete(response);
+		                if (response instanceof RejectAction) {
+		                	RejectAction rejectAction = (RejectAction) response;
+		                	future.completeExceptionally(new RejectException(rejectAction));
+		                	LOG.warn("Request with id " + response.getResponseId() + " failed: "
+		                			+ rejectAction.getMessage());
+		                } else {
+		                	future.complete(response);
+		                }
 		                return;
 		            }
 		            if (LOG.isInfoEnabled()) {
@@ -479,8 +501,13 @@ public class DefaultDiagramServer implements IDiagramServer {
 	 * Called when a {@link RequestModelAction} is received.
 	 */
 	protected void handle(RequestModelAction request) {
-		copyOptions(request);
-		submitModel(getModel(), false, request);
+		try {
+			copyOptions(request);
+			submitModel(getModel(), false, request);
+		} catch (Exception exc) {
+			rejectRemoteRequest(request, exc);
+			LOG.error("Error while processing RequestModelAction.", exc);
+		}
 	}
 	
 	/**
@@ -511,16 +538,25 @@ public class DefaultDiagramServer implements IDiagramServer {
 	 * Called when a {@link RequestPopupModelAction} is received.
 	 */
 	protected void handle(RequestPopupModelAction request) {
-		SModelRoot model = getModel();
-		SModelElement element = SModelIndex.find(model, request.getElementId());
-		IPopupModelFactory factory = getPopupModelFactory();
-		if (factory != null) {
-			SModelRoot popupModel = factory.createPopupModel(element, request, this);
-			if (popupModel != null) {
-				SetPopupModelAction response = new SetPopupModelAction(popupModel);
-				response.setResponseId(request.getRequestId());
-				dispatch(response);
+		try {
+			SModelRoot model = getModel();
+			SModelElement element = SModelIndex.find(model, request.getElementId());
+			IPopupModelFactory factory = getPopupModelFactory();
+			if (factory != null) {
+				SModelRoot popupModel = factory.createPopupModel(element, request, this);
+				if (popupModel != null) {
+					SetPopupModelAction response = new SetPopupModelAction(popupModel);
+					response.setResponseId(request.getRequestId());
+					dispatch(response);
+					return;
+				}
 			}
+			if (!Strings.isNullOrEmpty(request.getRequestId())) {
+				dispatch(new RejectAction("No popup model available.", request.getRequestId()));
+			}
+		} catch (Exception exc) {
+			rejectRemoteRequest(request, exc);
+			LOG.error("Error while processing RequestPopupModelAction.", exc);
 		}
 	}
 	
