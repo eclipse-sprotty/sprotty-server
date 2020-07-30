@@ -15,14 +15,16 @@
  ********************************************************************************/
 package org.eclipse.sprotty
 
+import java.util.concurrent.ExecutionException
 import org.apache.log4j.Logger
+import org.eclipse.sprotty.util.RejectException
 import org.eclipse.sprotty.util.TestLogger
 import org.eclipse.sprotty.util.TestSetup
 import org.junit.Before
 import org.junit.Test
 
-import static org.junit.Assert.*
 import static java.util.Collections.*
+import static org.junit.Assert.*
 
 class DefaultDiagramServerTest {
 	
@@ -187,7 +189,7 @@ class DefaultDiagramServerTest {
 		assertEquals(DummyLayoutEngine.Y, (server.model.children.head as BoundsAware).position.y, 0.0001)
 	}
 	
-	@Test(expected=NullPointerException)
+	@Test
 	def void testThrowingServerLayout() {
 		val server = new TestSetup[
 			layoutEngine = ThrowingLayoutEngine
@@ -207,6 +209,15 @@ class DefaultDiagramServerTest {
 				}
 			]
 		])
+	
+		assertEquals(#[
+			new ActionMessage[
+				action = new RejectAction[
+					responseId = 'foo001'
+					message = 'NullPointerException'
+				]
+			]
+		].toString, messages.toString)
 	}
 	
 	@Test
@@ -238,9 +249,83 @@ class DefaultDiagramServerTest {
 			]
 		])
 		
+		assertEquals(#[
+			new ActionMessage[
+				action = new RequestBoundsAction[
+					requestId = 'server_1'
+					newRoot = server.model
+				]
+			],
+			new ActionMessage[
+				action = new RejectAction[
+					responseId = 'foo001'
+					message = 'NullPointerException'
+				]
+			]
+		].toString, messages.toString)
 		assertEquals('''
 			ERROR: Exception while processing ComputedBoundsAction. (java.lang.NullPointerException)
 		'''.toString.trim, logger.toString.trim)
+	}
+	
+	@Test
+	def void testNoPopupModelFactory() {
+		val server = new TestSetup().createServer()
+		server.model = new SModelRoot[
+			type = 'root'
+			id = 'my-root'
+		]
+		val messages = newArrayList
+		server.remoteEndpoint = [m | messages.add(m)]
+		server.accept(new ActionMessage[
+			action = new RequestPopupModelAction[
+				requestId = 'foo001'
+				elementId = 'my-root'
+			]
+		])
+	
+		assertEquals(#[
+			new ActionMessage[
+				action = new RejectAction[
+					responseId = 'foo001'
+					message = 'No popup model available.'
+				]
+			]
+		].toString, messages.toString)
+	}
+	
+	@Test
+	def void testRequestToClient() {
+		val server = new TestSetup().createServer()
+		val future = server.request(new GetSelectionAction)
+		server.accept(new ActionMessage[
+			action = new SelectionResult[
+				responseId = 'server_1'
+				selectedElementsIDs = #['1', '2', '3']
+			]
+		])
+		val result = future.get
+		assertEquals(#['1', '2', '3'], result.selectedElementsIDs)
+	}
+	
+	@Test
+	def void testRequestToClientRejected() {
+		val server = new TestSetup().createServer()
+		val future = server.request(new GetSelectionAction)
+		server.accept(new ActionMessage[
+			action = new RejectAction[
+				responseId = 'server_1'
+				message = 'foo bar'
+			]
+		])
+		try {
+			future.get
+			fail('Expected an ExecutionException')
+		} catch (ExecutionException exc) {
+			assertTrue(exc.cause instanceof RejectException)
+			val cause = exc.cause as RejectException
+			assertEquals('foo bar', cause.action.message)
+		}
 	}
 	
 	/**
