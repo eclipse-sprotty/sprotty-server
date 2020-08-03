@@ -471,8 +471,10 @@ public class ElkLayoutEngine implements ILayoutEngine {
 						for (SModelElement sParent : sParents) {
 							if (sParent instanceof BoundsAware) {
 								Point position = ((BoundsAware) sParent).getPosition();
-								x -= position.getX();
-								y -= position.getY();
+								if (position != null) {
+									x -= position.getX();
+									y -= position.getY();
+								}
 							}
 						}
 					}
@@ -535,8 +537,10 @@ public class ElkLayoutEngine implements ILayoutEngine {
 		for (SModelElement sParent : sParents) {
 			if (sParent instanceof BoundsAware) {
 				Point position = ((BoundsAware) sParent).getPosition();
-				x -= position.getX();
-				y -= position.getY();
+				if (position != null) {
+					x -= position.getX();
+					y -= position.getY();
+				}
 			}
 		}
 		return new Point(x, y);
