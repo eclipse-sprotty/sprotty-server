@@ -549,7 +549,7 @@ public class ElkLayoutEngine implements ILayoutEngine {
 	/**
 	 * Data required for applying the computed ELK layout to the original sprotty model.
 	 */
-	protected static class LayoutContext {
+	public static class LayoutContext {
 		public SGraph sgraph;
 		public ElkNode elkGraph;
 		public final Map<SModelElement, SModelElement> parentMap = Maps.newHashMap();
