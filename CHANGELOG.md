@@ -2,15 +2,26 @@
 
 This change log covers only the server part of Sprotty. See also the change logs of [sprotty](https://github.com/eclipse/sprotty/blob/master/CHANGELOG.md), [sprotty-theia](https://github.com/eclipse/sprotty-theia/blob/master/CHANGELOG.md) and [sprotty-layout](https://github.com/eclipse/sprotty-layout/blob/master/CHANGELOG.md).
 
+### v0.9.0 (Aug. 2020)
+
+New features:
+ * Support request rejection ([#78](https://github.com/eclipse/sprotty-server/pull/78))
+
+Fixed issues: https://github.com/eclipse/sprotty-server/milestone/3?closed=1
+
+-----
+
 ### v0.8.0 (Apr. 2020)
 
-New features
+New features:
 
 * Center action retains zoom level ([#58](https://github.com/eclipse/sprotty-server/pull/58))
 * Build OSGi compliant jars ([#62](https://github.com/eclipse/sprotty-server/pull/62))
 * Upgrade to Xtext 2.21 ([#67](https://github.com/eclipse/sprotty-server/pull/67))
 
 Fixed issues: https://github.com/eclipse/sprotty-server/milestone/2?closed=1
+
+-----
 
 ### v0.7.0 (Oct. 2019)
 
