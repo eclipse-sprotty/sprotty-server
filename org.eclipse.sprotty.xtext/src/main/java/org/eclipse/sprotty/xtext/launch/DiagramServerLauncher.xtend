@@ -111,8 +111,8 @@ abstract class DiagramServerLauncher extends ServerLauncher {
 		
 		override protected append(LoggingEvent event) {
 			client.logMessage(new MessageParams => [
-				message = event.message.toString 
-					+ if(event.throwableStrRep !== null && event.throwableStrRep.length > 0) 
+				message = event.message?.toString 
+					+ if (event.throwableStrRep !== null && event.throwableStrRep.length > 0) 
 						': ' + event.throwableStrRep?.join('\n')
 					  else 
 					    ''
