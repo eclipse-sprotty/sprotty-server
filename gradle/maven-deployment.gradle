@@ -39,6 +39,11 @@ def configurePom = { pom ->
 				email 'miro.spoenemann@typefox.io'
 				organizationUrl 'http://typefox.io'
 			}
+			developer {
+				name 'Tom Vandenbussche'
+				email 'tom.vandenbussche@sigasi.com'
+				organizationUrl 'https://www.sigasi.com/'
+			}
 		}
 		scm {
 			connection 'scm:git:git@github.com:eclipse/sprotty-server.git'
