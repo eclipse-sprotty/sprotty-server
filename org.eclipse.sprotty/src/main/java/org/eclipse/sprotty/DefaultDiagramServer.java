@@ -213,7 +213,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 		return future;
 	}
 	
-	protected void rejectRemoteRequest(Action action, Throwable exception) {
+	public void rejectRemoteRequest(Action action, Throwable exception) {
 		if (action instanceof RequestAction) {
 			RequestAction<?> request = (RequestAction<?>) action;
 			if (!Strings.isNullOrEmpty(request.getRequestId())) {
@@ -257,6 +257,16 @@ public class DefaultDiagramServer implements IDiagramServer {
 			newRoot.setRevision(++revision);
 		}
 		return submitModel(newRoot, true, null);
+	}
+	
+	public CompletableFuture<Void> updateModel(SModelRoot newRoot, Action cause) {
+		if (newRoot == null)
+			throw new IllegalArgumentException("updateModel() cannot be called with null");
+		synchronized(modelLock) {
+			currentRoot = newRoot;
+			newRoot.setRevision(++revision);
+		}
+		return submitModel(newRoot, true, cause);
 	}
 	
 	public ServerStatus getStatus() {

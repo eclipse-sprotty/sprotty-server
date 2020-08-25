@@ -54,11 +54,9 @@ class LanguageAwareDiagramServer extends DefaultDiagramServer implements ILangua
 	@Inject com.google.inject.Provider<IDiagramGenerator> diagramGeneratorProvider
 	
 	override protected handle(RequestModelAction request) {
-		if (model.type == 'NONE' && diagramLanguageServer !== null) {
-			if (!request.requestId.nullOrEmpty)
-				LOG.warn("Model requests are not supported by the Xtext diagram server.")
+		if (diagramLanguageServer !== null) {
 			copyOptions(request)
-			diagramLanguageServer.diagramUpdater.updateDiagram(this)
+			diagramLanguageServer.diagramUpdater.updateDiagram(this, request)
 		} else {
 			super.handle(request)
 		}
