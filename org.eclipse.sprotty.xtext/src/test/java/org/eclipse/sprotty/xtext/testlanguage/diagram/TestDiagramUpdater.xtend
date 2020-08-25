@@ -21,7 +21,9 @@ import java.util.List
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import org.eclipse.sprotty.Action
 import org.eclipse.sprotty.xtext.ILanguageAwareDiagramServer
+import org.eclipse.sprotty.xtext.LanguageAwareDiagramServer
 import org.eclipse.sprotty.xtext.ls.DiagramUpdater
 
 @Singleton
@@ -30,29 +32,36 @@ class TestDiagramUpdater extends DiagramUpdater {
 	// uri -> (number of updates, last update future)
 	val updateFutures = new HashMap<String, Pair<Integer, CompletableFuture<Void>>>
 	
+	override updateDiagram(LanguageAwareDiagramServer diagramServer, Action cause) {
+		super.updateDiagram(diagramServer, cause) => [future |
+			internalUpdate(diagramServer.sourceUri, future)
+		]
+	}
+	
 	override protected doUpdateDiagrams(String path, List<? extends ILanguageAwareDiagramServer> diagramServers) {
-		val result = super.doUpdateDiagrams(path, diagramServers)
+		super.doUpdateDiagrams(path, diagramServers) => [future |
+			internalUpdate(path, future)
+		]
+	}
+	
+	private def internalUpdate(String path, CompletableFuture<Void> future) {
 		synchronized (updateFutures) {
 			val lastValue = updateFutures.get(path)
 			if (lastValue === null)
-				updateFutures.put(path, 1 -> result)
+				updateFutures.put(path, 1 -> future)
 			else
-				updateFutures.put(path, lastValue.key + 1 -> result)
-			updateFutures.notifyAll()
+				updateFutures.put(path, lastValue.key + 1 -> future)
 		}
-		return result
 	}
 	
 	def void waitForUpdates(String uri, int count, long timeout) throws TimeoutException {
 		val startTime = System.currentTimeMillis
-		val future = synchronized (updateFutures) {
-			while (!updateFutures.containsKey(uri) || updateFutures.get(uri).key < count) {
-				updateFutures.wait()
-				if (System.currentTimeMillis - startTime > timeout)
-					throw new TimeoutException("Timeout of " + timeout + " ms elapsed.")
-			}
-			updateFutures.get(uri).value
+		while (!updateFutures.containsKey(uri) || updateFutures.get(uri).key < count) {
+			Thread.sleep(20)
+			if (System.currentTimeMillis - startTime > timeout)
+				throw new TimeoutException("Timeout of " + timeout + " ms elapsed.")
 		}
+		val future = updateFutures.get(uri).value
 		future.get(timeout - (System.currentTimeMillis - startTime), TimeUnit.MILLISECONDS)
 	}
 	
