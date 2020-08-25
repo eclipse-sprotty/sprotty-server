@@ -17,12 +17,18 @@
 package org.eclipse.sprotty.xtext.ls
 
 import com.google.inject.Inject
+import com.google.inject.Singleton
 import java.util.Collection
+import java.util.List
 import java.util.Set
 import java.util.Timer
 import java.util.TimerTask
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.LinkedBlockingQueue
+import org.apache.log4j.Logger
 import org.eclipse.emf.common.util.URI
+import org.eclipse.sprotty.Action
+import org.eclipse.sprotty.xtext.ILanguageAwareDiagramServer
 import org.eclipse.sprotty.xtext.LanguageAwareDiagramServer
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.ide.server.ILanguageServerAccess
@@ -30,13 +36,11 @@ import org.eclipse.xtext.ide.server.UriExtensions
 import org.eclipse.xtext.resource.IResourceServiceProvider
 import org.eclipse.xtext.validation.CheckMode
 import org.eclipse.xtext.validation.IResourceValidator
-import java.util.concurrent.CompletableFuture
-import java.util.List
-import org.eclipse.sprotty.xtext.ILanguageAwareDiagramServer
-import com.google.inject.Singleton
 
 @Singleton
 class DiagramUpdater {
+	
+	static final Logger LOG = Logger.getLogger(DiagramUpdater)
 
 	@Accessors(PROTECTED_GETTER)
 	DiagramLanguageServer languageServer
@@ -58,7 +62,31 @@ class DiagramUpdater {
 	}
 
 	def void updateDiagram(LanguageAwareDiagramServer diagramServer) {
-		doUpdateDiagrams(#[diagramServer.sourceUri.toUri])
+		updateDiagram(diagramServer, null)
+	}
+
+	def void updateDiagram(LanguageAwareDiagramServer diagramServer, Action cause) {
+		val uri = diagramServer.sourceUri
+		if (uri.isNullOrEmpty) {
+			val exc = new RuntimeException("Missing property 'sourceUri'.")
+			diagramServer.rejectRemoteRequest(cause, exc)
+			LOG.error("Failed to update diagram.", exc);
+			return
+		}
+		languageServer.languageServerAccess.doRead(diagramServer.sourceUri) [ context |
+			try {
+				val issueProvider = validate(context)
+				val root = diagramServer.generate(context, issueProvider)
+				if (root === null)
+					diagramServer.rejectRemoteRequest(cause, new RuntimeException("Could not generate model for URI " + diagramServer.sourceUri))
+				else
+					diagramServer.updateModel(root, cause)
+			} catch (Exception exc) {
+				diagramServer.rejectRemoteRequest(cause, exc)
+				LOG.error("Exception while updating diagram for URI " + diagramServer.sourceUri, exc);
+			}
+			null
+		]
 	}
 
 	/**
