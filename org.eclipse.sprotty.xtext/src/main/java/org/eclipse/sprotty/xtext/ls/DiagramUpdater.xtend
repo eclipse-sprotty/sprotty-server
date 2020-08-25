@@ -65,13 +65,13 @@ class DiagramUpdater {
 		updateDiagram(diagramServer, null)
 	}
 
-	def void updateDiagram(LanguageAwareDiagramServer diagramServer, Action cause) {
+	def CompletableFuture<Void> updateDiagram(LanguageAwareDiagramServer diagramServer, Action cause) {
 		val uri = diagramServer.sourceUri
 		if (uri.isNullOrEmpty) {
 			val exc = new RuntimeException("Missing property 'sourceUri'.")
 			diagramServer.rejectRemoteRequest(cause, exc)
 			LOG.error("Failed to update diagram.", exc);
-			return
+			return CompletableFuture.completedFuture(null);
 		}
 		languageServer.languageServerAccess.doRead(diagramServer.sourceUri) [ context |
 			try {
@@ -105,10 +105,10 @@ class DiagramUpdater {
 				futures += doUpdateDiagrams(path, diagramServers)
 			}
 		}
-		return if (futures.empty)
-				CompletableFuture.completedFuture(null)
-			else
-				CompletableFuture.allOf(futures)
+		if (futures.empty)
+			return CompletableFuture.completedFuture(null)
+		else
+			return CompletableFuture.allOf(futures)
 	}
 
 	protected def CompletableFuture<Void> doUpdateDiagrams(String path, List<? extends ILanguageAwareDiagramServer> diagramServers) {
