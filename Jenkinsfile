@@ -4,7 +4,7 @@ kind: Pod
 spec:
   containers:
   - name: openjdk
-    image: openjdk:8
+    image: openjdk:11
     tty: true
     resources:
       limits:

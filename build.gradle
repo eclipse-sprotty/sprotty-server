@@ -18,9 +18,9 @@ import java.time.format.DateTimeFormatter
 import java.time.LocalDateTime
 
 buildscript {
-	repositories.jcenter()
+	repositories.mavenCentral()
 	dependencies {
-		classpath 'org.xtext:xtext-gradle-plugin:1.0.19'
+		classpath 'org.xtext:xtext-gradle-plugin:2.0.8'
 	}
 }
 
