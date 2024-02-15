@@ -18,9 +18,16 @@ import java.time.format.DateTimeFormatter
 import java.time.LocalDateTime
 
 buildscript {
-	repositories.mavenCentral()
+	repositories {
+		mavenCentral()
+		maven {
+			url "https://plugins.gradle.org/m2/"
+		}
+	}
 	dependencies {
-		classpath 'org.xtext:xtext-gradle-plugin:2.0.8'
+		// cs: version 6.4 of this plugin uses a gradle API marked as @deprecated, version 7.0.+ requires Java-17, so once Java is upgraded, upgrade this dependency, too!
+		classpath "biz.aQute.bnd:biz.aQute.bnd.gradle:6.4.+"
+		classpath 'org.xtext:xtext-gradle-plugin:4.0.+'
 	}
 }
 
@@ -39,17 +46,16 @@ configure(subprojects.findAll {it.file('src').exists()}) {
 	group = 'org.eclipse.sprotty'
 	version = rootProject.version
 
-	apply plugin: 'java'
+	apply plugin: 'java-library'
 	apply plugin: 'org.xtext.xtend'
 	apply plugin: 'eclipse'
-	apply plugin: 'idea'
 
 	apply from: "${rootDir}/gradle/java-compiler-settings.gradle"
 
 	if (name.contains('example')) {
 		javadocJar.enabled = false
 	} else {
-		apply plugin: 'maven'
+		apply plugin: 'maven-publish'
 		apply from: "${rootDir}/gradle/maven-deployment.gradle"
 		apply from: "${rootDir}/gradle/manifest-gen.gradle"
 	}

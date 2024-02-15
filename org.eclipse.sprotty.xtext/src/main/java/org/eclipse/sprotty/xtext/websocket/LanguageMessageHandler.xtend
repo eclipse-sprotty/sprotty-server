@@ -20,7 +20,7 @@ import java.io.FilterInputStream
 import java.io.IOException
 import java.nio.charset.Charset
 import java.util.List
-import javax.websocket.MessageHandler
+import jakarta.websocket.MessageHandler
 import org.eclipse.lsp4j.jsonrpc.RemoteEndpoint
 import org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor

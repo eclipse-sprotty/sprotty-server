@@ -17,29 +17,30 @@ package org.eclipse.sprotty.examples;
 
 import java.net.InetSocketAddress;
 
-import javax.websocket.server.ServerEndpointConfig;
+import jakarta.websocket.server.ServerEndpointConfig;
 
 import org.eclipse.elk.alg.force.options.ForceMetaDataProvider;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.util.log.Slf4jLog;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
+import org.eclipse.jetty.websocket.jakarta.server.config.JakartaWebSocketServletContainerInitializer;
 import org.eclipse.sprotty.examples.circlegraph.CircleGraphModule;
 import org.eclipse.sprotty.layout.ElkLayoutEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 public class ExampleLauncher {
 
-	private static final Slf4jLog LOG = new Slf4jLog(ExampleLauncher.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(ExampleLauncher.class);
 
 	public static void main(String[] args) {
 		try {
 			ElkLayoutEngine.initialize(new ForceMetaDataProvider());
 			new ExampleLauncher().launch();
 		} catch (Throwable throwable) {
-			ExampleLauncher.LOG.warn(throwable);
+			ExampleLauncher.LOG.warn("An exception occurred!", throwable);
 			System.exit(1);
 		}
 	}
@@ -55,7 +56,7 @@ public class ExampleLauncher {
 		webAppContext.setWelcomeFiles(new String[] { "index.html" });
 		server.setHandler(webAppContext);
 		
-		WebSocketServerContainerInitializer.configure(webAppContext, (servletContext, serverContainer) -> {
+		JakartaWebSocketServletContainerInitializer.configure(webAppContext, (servletContext, serverContainer) -> {
 			serverContainer.addEndpoint(ServerEndpointConfig.Builder
 					.create(LoggingServerEndpoint.class, "/circlegraph")
 					.configurator(new ExampleEndpointConfigurator(circleGraphInjector))

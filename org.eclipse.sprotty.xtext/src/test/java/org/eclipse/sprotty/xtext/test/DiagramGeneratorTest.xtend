@@ -92,7 +92,7 @@ class DiagramGeneratorTest extends AbstractDiagramServerTest {
     	])
     	languageServer.didChange(new DidChangeTextDocumentParams(
     		new VersionedTextDocumentIdentifier => [uri = sourceUri],
-    		#[new TextDocumentContentChangeEvent(new Range(new Position(1, 5), new Position(1, 8)), 3, 'baz')]
+    		#[new TextDocumentContentChangeEvent(new Range(new Position(1, 5), new Position(1, 8)), 'baz')]
     	))
     	waitForUpdates(sourceUri, 2)
     	assertGenerated('''

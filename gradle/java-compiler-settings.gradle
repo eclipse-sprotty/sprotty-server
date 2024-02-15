@@ -14,7 +14,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-sourceCompatibility = '1.8'
+java {
+	sourceCompatibility = '11'
+}
 
 tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
@@ -28,14 +30,14 @@ tasks.withType(Javadoc) {
 task sourcesJar(type: Jar, dependsOn: classes) {
 	group 'Build'
 	description 'Assembles a jar archive containing the sources'
-	classifier = 'sources'
+	archiveClassifier = 'sources'
 	from sourceSets.main.allSource
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
 	group 'Build'
 	description 'Assembles a jar archive containing the JavaDoc output'
-	classifier = 'javadoc'
+	archiveClassifier = 'javadoc'
 	from javadoc.destinationDir
 }
 

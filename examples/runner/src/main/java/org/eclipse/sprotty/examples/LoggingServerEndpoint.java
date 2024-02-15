@@ -15,20 +15,21 @@
  ********************************************************************************/
 package org.eclipse.sprotty.examples;
 
-import javax.websocket.EndpointConfig;
-import javax.websocket.Session;
+import jakarta.websocket.Session;
+import jakarta.websocket.EndpointConfig;
 
-import org.eclipse.jetty.util.log.Slf4jLog;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.eclipse.sprotty.ActionMessage;
 import org.eclipse.sprotty.server.websocket.DiagramServerEndpoint;
 
 public class LoggingServerEndpoint extends DiagramServerEndpoint {
 
-	private static final Slf4jLog LOG = new Slf4jLog(LoggingServerEndpoint.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(LoggingServerEndpoint.class);
 	
 	public LoggingServerEndpoint() {
 		super();
-		setExceptionHandler(exception -> LOG.warn(exception));
+		setExceptionHandler(exception -> LOG.warn("An exception occurred!", exception));
 	}
 	
 	@Override

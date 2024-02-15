@@ -18,9 +18,9 @@ package org.eclipse.sprotty.xtext.websocket
 import com.google.inject.Inject
 import org.eclipse.sprotty.server.json.ActionTypeAdapter
 import java.util.LinkedHashMap
-import javax.websocket.Endpoint
-import javax.websocket.EndpointConfig
-import javax.websocket.Session
+import jakarta.websocket.Endpoint
+import jakarta.websocket.EndpointConfig
+import jakarta.websocket.Session
 import org.eclipse.lsp4j.jsonrpc.RemoteEndpoint
 import org.eclipse.lsp4j.jsonrpc.json.JsonRpcMethod
 import org.eclipse.lsp4j.jsonrpc.json.JsonRpcMethodProvider
