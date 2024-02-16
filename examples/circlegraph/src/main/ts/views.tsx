@@ -15,11 +15,12 @@
  ********************************************************************************/
 
 /** @jsx svg */
-import { svg } from 'snabbdom-jsx';
-
-import { VNode } from 'snabbdom/vnode';
+import { svg } from 'sprotty/lib/lib/jsx.js';
 import { injectable } from 'inversify';
-import { RenderingContext, SNode, IView } from 'sprotty';
+import { VNode } from 'snabbdom';
+
+import { RenderingContext, IView } from 'sprotty';
+import { SNode } from 'sprotty-protocol';
 
 /**
  * A very simple example node consisting of a plain circle.
@@ -35,7 +36,7 @@ export class CircleNodeView implements IView {
     }
 
     protected getRadius(node: SNode): number {
-        const d = Math.min(node.size.width, node.size.height);
+        const d = Math.min(node.size!.width, node.size!.height);
         return d > 0 ? d / 2 : 0;
     }
 }

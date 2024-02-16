@@ -16,25 +16,26 @@
 
 import { Container, ContainerModule } from 'inversify';
 import {
-    TYPES, configureViewerOptions, SGraphView, PolylineEdgeView, ConsoleLogger, LogLevel,
-    WebSocketDiagramServer, CircularNode, configureModelElement, SGraph, SEdge, LayoutAction,
-    SelectionResult, ViewportResult, selectFeature, moveFeature, loadDefaultModules,
-    configureActionHandler
+    CircularNode, ConsoleLogger, LogLevel, PolylineEdgeView,
+    SEdgeImpl, SGraphImpl, SGraphView, TYPES, WebSocketDiagramServerProxy,
+    configureActionHandler, configureModelElement, configureViewerOptions,
+    loadDefaultModules, moveFeature, selectFeature
 } from 'sprotty';
+import { LayoutAction, SelectionResult, ViewportResult } from 'sprotty-protocol';
 import { CircleNodeView } from './views';
 
 export default () => {
     const circleGraphModule = new ContainerModule((bind, unbind, isBound, rebind) => {
-        bind(TYPES.ModelSource).to(WebSocketDiagramServer).inSingletonScope();
+        bind(TYPES.ModelSource).to(WebSocketDiagramServerProxy).inSingletonScope();
         rebind(TYPES.ILogger).to(ConsoleLogger).inSingletonScope();
         rebind(TYPES.LogLevel).toConstantValue(LogLevel.warn);
 
         const context = { bind, unbind, isBound, rebind };
-        configureModelElement(context, 'graph', SGraph, SGraphView);
+        configureModelElement(context, 'graph', SGraphImpl, SGraphView);
         configureModelElement(context, 'node', CircularNode, CircleNodeView, {
             disable: [moveFeature]
         });
-        configureModelElement(context, 'edge', SEdge, PolylineEdgeView, {
+        configureModelElement(context, 'edge', SEdgeImpl, PolylineEdgeView, {
             disable: [selectFeature]
         });
         configureActionHandler(context, LayoutAction.KIND, TYPES.ModelSource);
