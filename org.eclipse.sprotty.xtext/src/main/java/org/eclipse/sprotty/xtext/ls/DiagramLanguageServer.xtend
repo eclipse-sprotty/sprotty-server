@@ -76,8 +76,7 @@ class DiagramLanguageServer extends LanguageServerImpl implements DiagramServerE
 	
 	override accept(ActionMessage actionMessage) {
 		val diagramType = if (actionMessage.action instanceof RequestModelAction) 
-				(actionMessage.action as RequestModelAction).diagramType
-				?: (actionMessage.action as RequestModelAction).options.get(DiagramOptions.OPTION_DIAGRAM_TYPE)
+				(actionMessage.action as RequestModelAction).options.get(DiagramOptions.OPTION_DIAGRAM_TYPE)
 			else 
 			 	null
 		diagramServerManager

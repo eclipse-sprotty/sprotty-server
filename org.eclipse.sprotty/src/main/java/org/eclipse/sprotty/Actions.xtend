@@ -78,7 +78,8 @@ class RejectAction implements ResponseAction {
 }
 
 /**
- * Wrapper for actions when transferring them between server and client via an {@link IDiagramServer}.
+ * Wrapper for actions when transferring them between client and server.
+ * The `clientId` is used to identify the specific diagram instance in the client.
  */
 @Accessors
 @EqualsHashCode
@@ -109,7 +110,6 @@ class RequestModelAction implements RequestAction<SetModelAction>{
 	public static val KIND = 'requestModel'
 	String kind = KIND
 	
-	String diagramType
 	Map<String, String> options
 	String requestId
 	
@@ -140,6 +140,10 @@ class SetModelAction implements ResponseAction {
 	new(SModelRoot newRoot) {
 		this.newRoot = newRoot
 	}
+	new(SModelRoot newRoot, String responseId) {
+		this.newRoot = newRoot
+		this.responseId = responseId
+	}
 }
 
 /**
@@ -154,6 +158,7 @@ class UpdateModelAction implements Action {
 	String kind = KIND
 	
 	SModelRoot newRoot
+	List<Match> matches
 	Boolean animate
 	Action cause
 	
@@ -168,6 +173,23 @@ class UpdateModelAction implements Action {
         this.newRoot = newRoot
         this.cause = cause
     }
+	new(List<Match> matches) {
+		this.matches = matches
+	}
+    new(List<Match> matches, Action cause) {
+		this.matches = matches
+        this.cause = cause
+    }
+}
+
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls = true)
+class Match {
+	SModelElement left
+	SModelElement right
+	String leftParentId
+	String rightParentId
 }
 
 /**
@@ -272,9 +294,10 @@ class ElementAndAlignment{
 }
 
 /**
- * Triggered when the user changes the selection, e.g. by clicking on a selectable element. This action
- * is forwarded to the diagram server, if present, so it may react on the selection change. Furthermore,
- * the server can send such an action to the client in order to change the selection programmatically.
+ * Triggered when the user changes the selection, e.g. by clicking on a selectable element. The resulting
+ * SelectCommand changes the `selected` state accordingly, so the elements can be rendered differently.
+ * This action is also forwarded to the diagram server, if present, so it may react on the selection change.
+ * Furthermore, the server can send such an action to the client in order to change the selection programmatically.
  */
 @Accessors
 @EqualsHashCode
@@ -333,6 +356,7 @@ class CenterAction implements Action {
 	List<String> elementIds
 	boolean animate = true
 	boolean retainZoom = false
+	Double zoomScale
 	
 	new() {}
 	new(Consumer<CenterAction> initializer) {
@@ -366,8 +390,8 @@ class FitToScreenAction implements Action {
 
 /**
  * Triggered when the user hovers the mouse pointer over an element to get a popup with details on
- * that element. This action is sent from the client to the server. The response is a
- * {@link SetPopupModelAction}.
+ * that element. This action is sent from the client to the model source, e.g. a DiagramServer.
+ * The response is a {@link SetPopupModelAction}.
  */
 @Accessors
 @EqualsHashCode
@@ -387,10 +411,9 @@ class RequestPopupModelAction implements RequestAction<SetPopupModelAction> {
 }
 
 /**
- * Sent from the server to the client to display a popup in response to a {@link RequestPopupModelAction}.
- * This action can also be used to remove any existing popup by choosing {@code NONE} as type of the
- * root element.
- */
+ * Sent from the model source to the client to display a popup in response to a RequestPopupModelAction.
+ * This action can also be used to remove any existing popup by choosing EMPTY_ROOT as root element.
+  */
 @Accessors
 @EqualsHashCode
 @ToString(skipNulls = true)
@@ -432,6 +455,7 @@ class CollapseExpandAction implements Action {
 
 /**
  * Programmatic action for expanding or collapsing all elements.
+ * If `expand` is true, all elements are expanded, otherwise they are collapsed.
  */
 @Accessors
 @EqualsHashCode
@@ -546,6 +570,7 @@ class LayoutAction implements Action {
 	String kind = KIND
 	
 	String layoutType = LayoutType.FULL.toString
+	List<String> elementIds
 	
 	new() {}
 	new(Consumer<LayoutAction> initializer) {
@@ -591,6 +616,28 @@ class SelectionResult implements ResponseAction {
 }
 
 /**
+ * Directly set the diagram viewport to the given scroll and zoom values.
+ * The ID of the viewport element to manipulate must be given with the action
+ * (usually it is the root element's ID).
+ */
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls=true)
+class SetViewportAction implements Action {
+	public static val KIND = 'viewport'
+	String kind = KIND
+	
+    String elementId
+    Viewport newViewport
+    boolean animate = true
+    
+    new() {}
+	new(Consumer<SetViewportAction> initializer) {
+		initializer.accept(this)
+	}
+}
+
+/**
  * Request action for retrieving the current viewport and canvas bounds.
  */
 @Accessors
@@ -624,3 +671,203 @@ class ViewportResult implements ResponseAction {
 		initializer.accept(this)
 	}
 }
+
+
+/**
+ * Action to render the selected elements in front of others by manipulating the z-order.
+ */
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls=true)
+class BringToFrontAction implements Action {
+    public static val KIND = 'bringToFront'
+    String kind = KIND
+    
+    List<String> elementIDs
+
+	new() {}
+	new(Consumer<BringToFrontAction> initializer) {
+		initializer.accept(this)
+	}
+}
+
+/**
+ * Undo the previous operation on the stack of operations.
+ */
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls=true)
+class UndoAction implements Action {
+    public static val KIND = 'undo'
+    String kind = KIND
+    
+	new() {}
+	new(Consumer<UndoAction> initializer) {
+		initializer.accept(this)
+	}
+}
+
+/**
+ * Redo a previously undone operation.
+ */
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls=true)
+class RedoAction implements Action {
+    public static val KIND = 'redo'
+    String kind = KIND
+    
+	new() {}
+	new(Consumer<RedoAction> initializer) {
+		initializer.accept(this)
+	}
+}
+
+/**
+ * Move an arbitrary set of elements to new positions.
+ */
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls=true)
+class MoveAction implements Action {
+    public static val KIND = 'move'
+    String kind = KIND
+
+    List<ElementMove> moves
+    boolean animate = true
+    boolean finished
+    boolean stoppable
+    
+	new() {}
+	new(Consumer<MoveAction> initializer) {
+		initializer.accept(this)
+	}
+}
+
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls=true)
+class ElementMove {
+    String elementId
+    String elementType
+    Point fromPosition
+    Point toPosition
+}
+
+/**
+ * Triggered when the user puts the mouse pointer over an element.
+ */
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls=true)
+class HoverFeedbackAction implements Action {
+    public static val KIND = 'hoverFeedback'
+    String kind = KIND
+
+    String mouseoverElement
+    boolean mouseIsOver
+    
+	new() {}
+	new(Consumer<HoverFeedbackAction> initializer) {
+		initializer.accept(this)
+	}
+}
+
+/**
+ * Create an element with the given schema and add it to the diagram.
+ */
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls=true)
+class CreateElementAction implements Action {
+    public static val KIND = 'createElement'
+    String kind = KIND
+
+    String containerId
+    SModelElement elementSchema
+    
+	new() {}
+	new(Consumer<CreateElementAction> initializer) {
+		initializer.accept(this)
+	}
+}
+
+/**
+ * Delete a set of elements identified by their IDs.
+ */
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls=true)
+class DeleteElementAction implements Action {
+    public static val KIND = 'delete'
+    String kind = KIND
+
+    List<String> elementIds
+    
+	new() {}
+	new(Consumer<DeleteElementAction> initializer) {
+		initializer.accept(this)
+	}
+}
+
+/**
+ * Apply a text change to a label element.
+ */
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls=true)
+class ApplyLabelEditAction implements Action {
+    public static val KIND = 'applyLabelEdit'
+    String kind = KIND
+
+    String labelId
+    String text
+    
+	new() {}
+	new(Consumer<ApplyLabelEditAction> initializer) {
+		initializer.accept(this)
+	}
+}
+
+/**
+ * Change the source or target node of a routable element (edge of a graph).
+ */
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls=true)
+class ReconnectAction implements Action {
+    public static val KIND = 'reconnect'
+    String kind = KIND
+
+    String routableId
+    String newSourceId
+    String newTargetId
+    
+	new() {}
+	new(Consumer<ReconnectAction> initializer) {
+		initializer.accept(this)
+	}
+}
+
+
+/**
+ * Transport logging data to be stored elsewhere.
+ */
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls=true)
+class LoggingAction implements Action {
+	public static val KIND = 'logging'
+    String kind = KIND
+    String severity
+    String time
+    String caller
+    String message
+    List<String> params
+    
+    new() {}
+    new(Consumer<LoggingAction> initializer) {
+    	initializer.accept(this)
+    }
+}
+
