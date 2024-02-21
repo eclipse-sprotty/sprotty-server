@@ -293,6 +293,7 @@ class ElkLayoutEngineTest extends AbstractElkTest {
 			    ]
 			  )
 			  selected = false
+			  hoverFeedback = false
 			  type = "edge"
 			  id = "g/node1/edge1"
 			]
@@ -354,6 +355,7 @@ class ElkLayoutEngineTest extends AbstractElkTest {
 			    ]
 			  )
 			  selected = false
+			  hoverFeedback = false
 			  type = "edge"
 			  id = "g/node1/edge0"
 			]
@@ -415,6 +417,7 @@ class ElkLayoutEngineTest extends AbstractElkTest {
 			    ]
 			  )
 			  selected = false
+			  hoverFeedback = false
 			  type = "edge"
 			  id = "g/node1/edge1"
 			]
@@ -476,6 +479,7 @@ class ElkLayoutEngineTest extends AbstractElkTest {
 			    ]
 			  )
 			  selected = false
+			  hoverFeedback = false
 			  type = "edge"
 			  id = "g/node0/edge1"
 			]

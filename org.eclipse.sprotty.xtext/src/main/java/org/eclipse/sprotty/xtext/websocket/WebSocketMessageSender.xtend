@@ -16,7 +16,7 @@
  
 package org.eclipse.sprotty.xtext.websocket
 
-import javax.websocket.Session
+import jakarta.websocket.Session
 
 class WebSocketMessageSender {
 	

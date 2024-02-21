@@ -18,9 +18,9 @@ import "reflect-metadata";
 
 import createContainer from './di.config';
 import {
-    TYPES, IActionDispatcher, WebSocketDiagramServer, RequestModelAction, FitToScreenAction,
-    LayoutAction, SelectAllAction, createRandomId
+    TYPES, IActionDispatcher, WebSocketDiagramServerProxy, createRandomId
 } from 'sprotty';
+import { LayoutAction, SelectAllAction, RequestModelAction, FitToScreenAction, } from 'sprotty-protocol';
 
 import './circlegraph.css';
 import 'sprotty/css/sprotty.css';
@@ -28,7 +28,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 const container = createContainer();
 
-const server = container.get<WebSocketDiagramServer>(TYPES.ModelSource);
+const server = container.get<WebSocketDiagramServerProxy>(TYPES.ModelSource);
 server.clientId = createRandomId(16);
 const websocket = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/circlegraph`)
 server.listen(websocket);
@@ -37,12 +37,12 @@ const dispatcher = container.get<IActionDispatcher>(TYPES.IActionDispatcher);
 websocket.addEventListener('open', async () => {
     const setModel = await dispatcher.request(RequestModelAction.create());
     await dispatcher.dispatch(setModel);
-    await dispatcher.dispatch(new FitToScreenAction([]));
+    await dispatcher.dispatch(FitToScreenAction.create([]));
 }, { once: true });
 
 document.getElementById('layoutAll')!.addEventListener('click', () => {
-    dispatcher.dispatch(new SelectAllAction(false));
-    dispatcher.dispatch(new LayoutAction());
+    dispatcher.dispatch(SelectAllAction.create({ select: false }));
+    dispatcher.dispatch(LayoutAction.create());
     focusGraph();
 });
 

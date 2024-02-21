@@ -47,7 +47,7 @@ import org.eclipse.sprotty.BoundsAware;
 import org.eclipse.sprotty.Dimension;
 import org.eclipse.sprotty.EdgeLayoutable;
 import org.eclipse.sprotty.ILayoutEngine;
-import org.eclipse.sprotty.Layouting;
+import org.eclipse.sprotty.LayoutContainer;
 import org.eclipse.sprotty.Point;
 import org.eclipse.sprotty.SEdge;
 import org.eclipse.sprotty.SGraph;
@@ -174,8 +174,8 @@ public class ElkLayoutEngine implements ILayoutEngine {
 				}
 				int grandChildrenCount = processChildren(schild, elkChild != null ? elkChild : elkParent, context);
 				childrenCount += grandChildrenCount;
-				if (grandChildrenCount > 0 && sParent instanceof Layouting && schild instanceof BoundsAware) {
-					handleClientLayout((BoundsAware) schild, (Layouting) sParent, elkParent, context);
+				if (grandChildrenCount > 0 && sParent instanceof LayoutContainer && schild instanceof BoundsAware) {
+					handleClientLayout((BoundsAware) schild, (LayoutContainer) sParent, elkParent, context);
 				}
 			}
 		}
@@ -192,9 +192,9 @@ public class ElkLayoutEngine implements ILayoutEngine {
 		else if (element instanceof SEdge)
 			// Edges are automatically put into their most suitable container
 			return true;
-		else if (sParent instanceof Layouting) {
+		else if (sParent instanceof LayoutContainer) {
 			// If the parent has configured a client layout, we ignore its direct children in the server layout
-			String layout = ((Layouting) sParent).getLayout();
+			String layout = ((LayoutContainer) sParent).getLayout();
 			if (layout != null && !layout.isEmpty())
 				return false;
 		} else if (element instanceof EdgeLayoutable && ((EdgeLayoutable)element).getEdgePlacement() != null)
@@ -205,7 +205,7 @@ public class ElkLayoutEngine implements ILayoutEngine {
 	/**
 	 * Consider the layout computed by the client by configuring appropriate ELK layout options.
 	 */
-	protected void handleClientLayout(BoundsAware element, Layouting sParent, ElkGraphElement elkParent, LayoutContext context) {
+	protected void handleClientLayout(BoundsAware element, LayoutContainer sParent, ElkGraphElement elkParent, LayoutContext context) {
 		String layout = sParent.getLayout();
 		if (layout != null && !layout.isEmpty()) {
 			Point position = element.getPosition();

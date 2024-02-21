@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.apache.log4j.Logger;
 import org.eclipse.sprotty.util.RejectException;
@@ -381,8 +381,7 @@ public class DefaultDiagramServer implements IDiagramServer {
 				if (cause instanceof RequestModelAction
 						&& !Strings.isNullOrEmpty(((RequestModelAction) cause).getRequestId())) {
 					RequestModelAction request = (RequestModelAction) cause;
-					SetModelAction response = new SetModelAction(newRoot);
-					response.setResponseId(request.getRequestId());
+					SetModelAction response = new SetModelAction(newRoot, request.getRequestId());
 		            dispatch(response);
 		        } else if (update && modelType != null && modelType.equals(lastSubmittedModelType)) {
 					dispatch(new UpdateModelAction(newRoot, cause));

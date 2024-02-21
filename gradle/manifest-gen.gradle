@@ -9,8 +9,7 @@
  * 
  * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
  ******************************************************************************/
-
-apply plugin: 'osgi'
+apply plugin: "biz.aQute.bnd.builder"
 
 def baseVersion = project.version
 if (baseVersion.endsWith('-SNAPSHOT'))
@@ -19,18 +18,13 @@ else if (baseVersion.split('\\.').length == 4)
 	baseVersion = baseVersion.substring(0, baseVersion.lastIndexOf('.'))
 def qualifiedVersion = baseVersion + '.v' + buildTime
 
-jar.manifest {
-	version = qualifiedVersion
-	vendor = 'Eclipse Sprotty'
-	instruction 'Bundle-RequiredExecutionEnvironment', 'JavaSE-1.8'
-	instruction 'Import-Package', "com.google.common.*;version=\"$versions.guava\""
-	instruction 'Import-Package', '*'
-}
-
-afterEvaluate {
-	if (project.hasProperty('title'))
-		jar.manifest.name = project.title
-}
+jar.bundle.bnd (
+	'Bundle-Version': qualifiedVersion,
+	'Bundle-Vendor': 'Eclipse Sprotty',
+	'Bundle-RequiredExecutionEnvironment': 'JavaSE-11',
+	'Import-Package': "com.google.common.*;version=\"$versions.guava\", *",
+	"-savemanifest": "build/tmp/bnd/MANIFEST.MF",
+)
 
 //------------------------------------------------------
 // Generate a manifest for the source bundle
@@ -70,7 +64,7 @@ sourcesJar {
 
 task eclipseManifest(type: Copy) {
 	dependsOn(jar)
-    from "$buildDir/tmp/jar/MANIFEST.MF"
+    from "$buildDir/tmp/bnd/MANIFEST.MF"
     into 'META-INF'
 }
 

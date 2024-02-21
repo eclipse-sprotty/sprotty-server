@@ -17,14 +17,13 @@
 package org.eclipse.sprotty.xtext.test
 
 import com.google.inject.Inject
-import java.util.HashMap
 import org.eclipse.sprotty.DiagramOptions
 import org.eclipse.sprotty.RequestModelAction
 import org.eclipse.sprotty.xtext.ls.DiagramServerManager
+import org.eclipse.sprotty.xtext.testlanguage.diagram.TestDiagramServerFactory
 import org.junit.Test
 
 import static org.junit.Assert.*
-import org.eclipse.sprotty.xtext.testlanguage.diagram.TestDiagramServerFactory
 
 class DiagramExtensionTest extends AbstractDiagramServerTest {
 	
@@ -38,10 +37,11 @@ class DiagramExtensionTest extends AbstractDiagramServerTest {
         ''')
     	initialize()
     	action(new RequestModelAction [
-    		diagramType = TestDiagramServerFactory.DIAGRAM_TYPE
-    		options = new HashMap => [
-    			put(DiagramOptions.OPTION_SOURCE_URI, sourceUri)
-    		]
+    		options = #{
+    			DiagramOptions.OPTION_DIAGRAM_TYPE -> TestDiagramServerFactory.DIAGRAM_TYPE,
+    			DiagramOptions.OPTION_SOURCE_URI -> sourceUri
+    			
+    		}
     	])
     	assertEquals(1, diagramServerManager.diagramServers.size)
     	closeDiagram()

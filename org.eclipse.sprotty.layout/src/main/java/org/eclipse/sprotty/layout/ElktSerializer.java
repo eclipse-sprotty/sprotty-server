@@ -19,8 +19,8 @@ import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
 import org.apache.log4j.Logger;
 import org.eclipse.elk.graph.ElkNode;

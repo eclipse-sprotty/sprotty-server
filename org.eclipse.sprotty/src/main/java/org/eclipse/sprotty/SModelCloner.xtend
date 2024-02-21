@@ -38,7 +38,7 @@ class SModelCloner {
 	}
 	
 	protected def dispatch Object doClone(Object obj) {
-		val clone = obj.class.newInstance()
+		val clone = obj.class.getConstructor().newInstance()
 		var Class<?> currentClass = obj.class
 		do {
 			for (field : currentClass.declaredFields) {

@@ -33,7 +33,7 @@ import org.apache.log4j.Logger
  * a given model element in order to establish cross references in the SModel, 
  * e.g. for <code>sourceId</code> and <code>target</code> of an <code>SEdge</code>. 
  * 
- * @param T the type of the underling model element
+ * @param <T> the type of the underling model element
  */
 class IdCache <T> {
 	

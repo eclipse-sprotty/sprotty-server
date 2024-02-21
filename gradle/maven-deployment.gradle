@@ -14,57 +14,59 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-def configurePom = { pom ->
-	pom.project {
-		if (project.hasProperty('title')) {
-			name = project.title
-			description = project.description
-		}
-		packaging 'jar'
-		url 'https://github.com/eclipse/sprotty-server'
-		licenses {
-			license {
-				name 'Eclipse Public License v2.0'
-				url 'http://www.eclipse.org/legal/epl-2.0'
+publishing {
+	publications {
+		LocalMavenRepo(MavenPublication) {
+			from components.java
+
+			artifact sourcesJar
+			artifact javadocJar
+
+			pom {
+				//packaging 'jar'
+				url = 'https://github.com/eclipse/sprotty-server'
+				licenses {
+					license {
+						name = 'Eclipse Public License v2.0'
+						url = 'http://www.eclipse.org/legal/epl-2.0'
+					}
+				}
+				scm {
+					connection = 'scm:git:git@github.com:eclipse/sprotty-server.git'
+					developerConnection = 'scm:git:git@github.com:eclipse/sprotty-server.git'
+					url = 'git@github.com:eclipse/sprotty-server.git'
+				}
+				developers {
+					developer {
+						name = 'Jan Köhnlein'
+						email = 'jan.koehnlein@typefox.io'
+						organizationUrl = 'http://typefox.io'
+					}
+					developer {
+						name = 'Miro Spönemann'
+						email = 'miro.spoenemann@typefox.io'
+						organizationUrl = 'http://typefox.io'
+					}
+					developer {
+						name = 'Tom Vandenbussche'
+						email = 'tom.vandenbussche@sigasi.com'
+						organizationUrl = 'https://www.sigasi.com/'
+					}
+				}
+				// We need to wait until the project's own build file has been executed
+				// so we can use the title and description settings for setting up Maven publishing.
+				afterEvaluate {
+					if (project.hasProperty('title')) {
+						name = project.title
+						description = project.description
+					}
+				}
 			}
-		}
-		developers {
-			developer {
-				name 'Jan Köhnlein'
-				email 'jan.koehnlein@typefox.io'
-				organizationUrl 'http://typefox.io'
-			}
-			developer {
-				name 'Miro Spönemann'
-				email 'miro.spoenemann@typefox.io'
-				organizationUrl 'http://typefox.io'
-			}
-			developer {
-				name 'Tom Vandenbussche'
-				email 'tom.vandenbussche@sigasi.com'
-				organizationUrl 'https://www.sigasi.com/'
-			}
-		}
-		scm {
-			connection 'scm:git:git@github.com:eclipse/sprotty-server.git'
-			developerConnection 'scm:git:git@github.com:eclipse/sprotty-server.git'
-			url 'git@github.com:eclipse/sprotty-server.git'
 		}
 	}
-}
-
-// We need to wait until the project's own build file has been executed
-// so we can use the title and description settings for setting up Maven publishing.
-afterEvaluate {
-	
-	task createLocalMavenRepo(type: Upload) {
-		group = 'Upload'
-		description = 'Create or update the local Maven repository'
-		configuration = configurations.archives
-		repositories.mavenDeployer {
-			repository(url: "file:" + file("${rootDir}/build/maven-repository"))
-			configurePom(pom)
+	repositories {
+		maven {
+			url = "$rootProject.buildDir/maven-repository"
 		}
 	}
-
 }

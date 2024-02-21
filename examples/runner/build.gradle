@@ -1,23 +1,25 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
 dependencies {
-	compile project(':example-circlegraph')
-	compile "org.eclipse.jetty:jetty-server:$versions.jetty"
-	compile "org.eclipse.jetty.websocket:javax-websocket-server-impl:$versions.jetty"
-	compile "com.google.inject:guice:${versions.guice}"
-	compile "org.slf4j:slf4j-simple:${versions.slf4j}"
-	compile "org.slf4j:log4j-over-slf4j:${versions.slf4j}"
+	api project(':example-circlegraph')
+	api "org.eclipse.jetty:jetty-server:$versions.jetty"
+	api "org.eclipse.jetty.websocket:websocket-jakarta-server:$versions.jetty"
+	api "com.google.inject:guice:${versions.guice}"
+	api "org.slf4j:slf4j-simple:${versions.slf4j}"
+	api "org.slf4j:log4j-over-slf4j:${versions.slf4j}"
 }
 
-task yarn(type:Exec) {
+task npmInstall(type:Exec) {
 	workingDir "${projectDir}/.."
-	commandLine 'yarn'
+	commandLine Os.isFamily(Os.FAMILY_WINDOWS) ? 'npm.cmd' : 'npm', 'install'
 	group = 'build'
-	description = 'Executes yarn to load dependencies and build the web app.'
+	description = 'Executes npm to load dependencies and build the web app.'
 }
 
 task runExamples(type:JavaExec) {
-	dependsOn(sourceSets.main.runtimeClasspath, yarn)
+	dependsOn(sourceSets.main.runtimeClasspath, npmInstall)
 	classpath = sourceSets.main.runtimeClasspath.filter{it.exists()}
-	main = 'org.eclipse.sprotty.examples.ExampleLauncher'
+	mainClass = 'org.eclipse.sprotty.examples.ExampleLauncher'
 	group = 'run'
 	description = 'Starts a Jetty server for the examples.'
 }

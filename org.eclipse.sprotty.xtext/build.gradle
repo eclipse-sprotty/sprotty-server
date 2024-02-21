@@ -18,11 +18,11 @@ ext.title = "Sprotty for Xtext"
 description = "Integration of sprotty with Xtext language servers"
 
 dependencies {
-	compile project(':org.eclipse.sprotty.server')
-	compile "org.eclipse.xtext:org.eclipse.xtext.ide:${versions.xtext}"
-	compile "org.eclipse.lsp4j:org.eclipse.lsp4j:${versions.lsp4j}"
-	testCompile "org.eclipse.xtext:org.eclipse.xtext.testing:${versions.xtext}"
-	testCompile "junit:junit:${versions.junit}"
+	api project(':org.eclipse.sprotty.server')
+	api "org.eclipse.xtext:org.eclipse.xtext.ide:${versions.xtext}"
+	api "org.eclipse.lsp4j:org.eclipse.lsp4j:${versions.lsp4j}"
+	testImplementation "org.eclipse.xtext:org.eclipse.xtext.testing:${versions.xtext}"
+	testImplementation "junit:junit:${versions.junit}"
 }
 
 sourceSets.test.java.srcDir 'src/test/xtext-gen'
@@ -30,7 +30,7 @@ sourceSets.test.resources.srcDir 'src/test/xtext-gen'
 
 configurations {
 	mwe2 {
-		extendsFrom compile
+		extendsFrom api
 	}
 	// Use newer version of Guice at runtime to make sure we get proper error messages
 	testRuntimeClasspath.resolutionStrategy {
@@ -49,7 +49,7 @@ dependencies {
 }
 
 task generateTestLanguage(type: JavaExec) {
-	main = 'org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher'
+	mainClass = 'org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher'
 	classpath = configurations.mwe2
 	def workflowFile = 'src/test/java/org/eclipse/sprotty/xtext/testlanguage/GenerateTestLanguage.mwe2'
 	def grammarFile = 'src/test/java/org/eclipse/sprotty/xtext/testlanguage/TestLanguage.xtext'
@@ -62,5 +62,6 @@ task generateTestLanguage(type: JavaExec) {
 }
 
 generateTestXtext.dependsOn(generateTestLanguage)
+processTestResources.dependsOn(generateTestLanguage)
 clean.dependsOn(cleanGenerateTestLanguage)
 eclipse.classpath.plusConfigurations += [configurations.mwe2]

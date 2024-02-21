@@ -15,7 +15,6 @@
  ********************************************************************************/
 package org.eclipse.sprotty.xtext.test
 
-import java.util.HashMap
 import org.eclipse.lsp4j.DidChangeTextDocumentParams
 import org.eclipse.lsp4j.DidOpenTextDocumentParams
 import org.eclipse.lsp4j.Position
@@ -29,7 +28,6 @@ import org.eclipse.sprotty.xtext.testlanguage.diagram.TestLanguageDiagramGenerat
 import org.junit.Test
 
 import static org.junit.Assert.*
-import org.eclipse.sprotty.xtext.testlanguage.diagram.TestDiagramServerFactory
 
 class DiagramGeneratorTest extends AbstractDiagramServerTest {
 	
@@ -43,10 +41,9 @@ class DiagramGeneratorTest extends AbstractDiagramServerTest {
     	val diagramGenerator = getServiceProvider(sourceUri).get(TestLanguageDiagramGenerator)
     	assertTrue(diagramGenerator.results.empty)
     	action(new RequestModelAction[
-    		diagramType = TestDiagramServerFactory.DIAGRAM_TYPE
-    		options = new HashMap => [
-    			put(DiagramOptions.OPTION_SOURCE_URI, sourceUri)
-    		]
+    		options = #{
+    			DiagramOptions.OPTION_SOURCE_URI -> sourceUri
+    		}
     	])
     	waitForUpdates(sourceUri, 1)
     	assertGenerated('''
@@ -60,11 +57,13 @@ class DiagramGeneratorTest extends AbstractDiagramServerTest {
     		    children = ArrayList (
     		      SNode [
     		        selected = false
+    		        hoverFeedback = false
     		        type = "node"
     		        id = "foo"
     		      ],
     		      SNode [
     		        selected = false
+    		        hoverFeedback = false
     		        type = "node"
     		        id = "bar"
     		      ]
@@ -86,13 +85,13 @@ class DiagramGeneratorTest extends AbstractDiagramServerTest {
     		new TextDocumentItem(sourceUri, 'testlang', 0, initialContent)
     	))
     	action(new RequestModelAction[
-    		options = new HashMap => [
-    			put(DiagramOptions.OPTION_SOURCE_URI, sourceUri)
-    		]
+    		options = #{
+    			DiagramOptions.OPTION_SOURCE_URI -> sourceUri
+    		}
     	])
     	languageServer.didChange(new DidChangeTextDocumentParams(
     		new VersionedTextDocumentIdentifier => [uri = sourceUri],
-    		#[new TextDocumentContentChangeEvent(new Range(new Position(1, 5), new Position(1, 8)), 3, 'baz')]
+    		#[new TextDocumentContentChangeEvent(new Range(new Position(1, 5), new Position(1, 8)), 'baz')]
     	))
     	waitForUpdates(sourceUri, 2)
     	assertGenerated('''
@@ -106,11 +105,13 @@ class DiagramGeneratorTest extends AbstractDiagramServerTest {
     		    children = ArrayList (
     		      SNode [
     		        selected = false
+    		        hoverFeedback = false
     		        type = "node"
     		        id = "foo"
     		      ],
     		      SNode [
     		        selected = false
+    		        hoverFeedback = false
     		        type = "node"
     		        id = "bar"
     		      ]
@@ -126,11 +127,13 @@ class DiagramGeneratorTest extends AbstractDiagramServerTest {
     		    children = ArrayList (
     		      SNode [
     		        selected = false
+    		        hoverFeedback = false
     		        type = "node"
     		        id = "foo"
     		      ],
     		      SNode [
     		        selected = false
+    		        hoverFeedback = false
     		        type = "node"
     		        id = "baz"
     		      ]

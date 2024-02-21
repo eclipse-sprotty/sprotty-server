@@ -85,17 +85,3 @@ class Bounds {
 		this.height = height
 	}
 }
-
-@Accessors
-@EqualsHashCode
-@ToString(skipNulls = true)
-class Viewport implements Scrollable, Zoomable {
-	Point scroll
-	double zoom
-	
-	new() {}
-	new(Point scroll, double zoom) {
-		this.scroll = scroll
-		this.zoom = zoom
-	}
-}

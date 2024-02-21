@@ -14,18 +14,18 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-version = '0.11.0-SNAPSHOT'
+version = '1.1.0-SNAPSHOT'
 
 ext.versions = [
-    xtext: '2.26.0',
-    elk: '0.7.0',
-    guava: '[14.0,28)',
-    guice: '5.0.1',
-    gson: '2.8.6',
-    websocket: '1.0',
-    log4j: '1.2.17',
-    slf4j: '1.7.28',
-    junit: '4.12',
-    lsp4j: '0.12.0',
-    jetty: '9.4.20.v20190813'
+    xtext: '2.33.+',
+    elk: '0.9.+',
+    guava: '[32.0.0, 33)',
+    guice: '7.0.+',
+    gson: '2.10.+',
+    jakartaee_api: '10.0.+',
+    log4j: '1.2.+',
+    slf4j: '1.7.+',
+    junit: '4.13.+',
+    lsp4j: '0.22.+',
+    jetty: '11.0.+'
 ]

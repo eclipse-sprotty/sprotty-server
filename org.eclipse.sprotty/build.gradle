@@ -18,9 +18,9 @@ ext.title = "Sprotty Diagram API"
 description = "Server API for providing sprotty diagrams"
 
 dependencies {
-	compile "javax.inject:javax.inject:1"
-    compile "org.eclipse.xtend:org.eclipse.xtend.lib:${versions.xtext}"
-    compile "log4j:log4j:${versions.log4j}"
-    testCompile "junit:junit:${versions.junit}"
-    testCompile "com.google.inject:guice:${versions.guice}"
+	api "jakarta.inject:jakarta.inject-api:2.0.+"
+    api "org.eclipse.xtend:org.eclipse.xtend.lib:${versions.xtext}"
+    api "log4j:log4j:${versions.log4j}"
+    testImplementation "junit:junit:${versions.junit}"
+    testImplementation "com.google.inject:guice:${versions.guice}"
 }

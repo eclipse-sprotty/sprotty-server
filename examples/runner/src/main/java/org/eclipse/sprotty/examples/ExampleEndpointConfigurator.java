@@ -15,7 +15,7 @@
  ********************************************************************************/
 package org.eclipse.sprotty.examples;
 
-import javax.websocket.server.ServerEndpointConfig;
+import jakarta.websocket.server.ServerEndpointConfig;
 
 import org.eclipse.sprotty.IDiagramServer;
 import org.eclipse.sprotty.examples.circlegraph.LayoutSelectionAction;

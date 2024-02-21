@@ -16,7 +16,7 @@
 package org.eclipse.sprotty.xtext.websocket
 
 import java.io.ByteArrayOutputStream
-import javax.websocket.RemoteEndpoint
+import jakarta.websocket.RemoteEndpoint
 import org.eclipse.lsp4j.jsonrpc.json.MessageJsonHandler
 import org.eclipse.lsp4j.jsonrpc.json.StreamMessageConsumer
 import org.eclipse.lsp4j.jsonrpc.messages.Message
