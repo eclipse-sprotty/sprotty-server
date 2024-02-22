@@ -56,7 +56,8 @@ configure(subprojects.findAll {it.file('src').exists()}) {
 		javadocJar.enabled = false
 	} else {
 		apply plugin: 'maven-publish'
-		apply from: "${rootDir}/gradle/maven-deployment.gradle"
+		apply plugin: 'signing'
+		apply from: "${rootDir}/gradle/publishing.gradle"
 		apply from: "${rootDir}/gradle/manifest-gen.gradle"
 	}
 }

@@ -16,15 +16,23 @@
 
 publishing {
 	publications {
-		LocalMavenRepo(MavenPublication) {
+		mavenJava(MavenPublication) {
 			from components.java
-
+			
 			artifact sourcesJar
 			artifact javadocJar
-
+			
 			pom {
-				//packaging 'jar'
-				url = 'https://github.com/eclipse/sprotty-server'
+				afterEvaluate {
+					groupId project.group
+					artifactId project.name
+					version project.version
+					if (project.hasProperty('title')) {
+						name = project.title
+						description = project.description
+					}
+				}
+				url = 'https://github.com/eclipse-sprotty/sprotty-server'
 				licenses {
 					license {
 						name = 'Eclipse Public License v2.0'
@@ -32,9 +40,9 @@ publishing {
 					}
 				}
 				scm {
-					connection = 'scm:git:git@github.com:eclipse/sprotty-server.git'
-					developerConnection = 'scm:git:git@github.com:eclipse/sprotty-server.git'
-					url = 'git@github.com:eclipse/sprotty-server.git'
+					connection = 'scm:git:git@github.com:eclipse-sprotty/sprotty-server.git'
+					developerConnection = 'scm:git:git@github.com:eclipse-sprotty/sprotty-server.git'
+					url = 'git@github.com:eclipse-sprotty/sprotty-server.git'
 				}
 				developers {
 					developer {
@@ -53,20 +61,34 @@ publishing {
 						organizationUrl = 'https://www.sigasi.com/'
 					}
 				}
-				// We need to wait until the project's own build file has been executed
-				// so we can use the title and description settings for setting up Maven publishing.
-				afterEvaluate {
-					if (project.hasProperty('title')) {
-						name = project.title
-						description = project.description
-					}
-				}
 			}
 		}
 	}
+
 	repositories {
 		maven {
-			url = "$rootProject.buildDir/maven-repository"
+			name = "OSSRH"
+			def releasesRepoUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+			def snapshotsRepoUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
+			credentials {
+				username = System.getenv('SONATYPE_USERNAME') ?: ''
+				password = System.getenv('SONATYPE_PASSWORD') ?: ''
+			}
+			url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+			// use this URL for local testing/debugging purposes			
+			// url = "file:" + file("${rootDir}/build/maven-repository")
+		}
+	}
+
+	signing {
+		// Use signing.gnupg.passphrase property to bypass the secret key passphrase
+		useGpgCmd()
+		sign publishing.publications.mavenJava
+	}
+
+	javadoc {
+		if (JavaVersion.current().isJava9Compatible()) {
+			options.addBooleanOption('html5', true)
 		}
 	}
 }
