@@ -25,10 +25,9 @@ import java.util.Set;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.google.gson.TypeAdapter;
-import com.google.gson.internal.bind.JsonTreeWriter;
 import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 
 /**
@@ -116,57 +115,9 @@ public abstract class PropertyBasedTypeAdapter<T> extends TypeAdapter<T> {
 	}
 	
 	protected JsonElement toTree(JsonReader in) throws IOException {
-		JsonTreeWriter writer = new JsonTreeWriter();
-		transfer(in, writer);
-		return writer.get();
+		return JsonParser.parseReader(in);
 	}
 	
-	protected void transfer(JsonReader in, JsonWriter out) throws IOException {
-		JsonToken token = in.peek();
-		switch (token) {
-		case BEGIN_ARRAY:
-			in.beginArray();
-			out.beginArray();
-			while (in.hasNext()) {
-				transfer(in, out);
-			}
-			out.endArray();
-			in.endArray();
-			break;
-			
-		case BEGIN_OBJECT:
-			in.beginObject();
-			out.beginObject();
-			while (in.hasNext()) {
-				out.name(in.nextName());
-				transfer(in, out);
-			}
-			out.endObject();
-			in.endObject();
-			break;
-			
-		case STRING:
-			out.value(in.nextString());
-			break;
-			
-		case NUMBER:
-			out.value(in.nextDouble());
-			break;
-			
-		case BOOLEAN:
-			out.value(in.nextBoolean());
-			break;
-			
-		case NULL:
-			in.nextNull();
-			out.nullValue();
-			break;
-			
-		default:
-			throw new IllegalStateException();
-		}
-	}
-
 	@Override
 	public void write(JsonWriter out, T value) throws IOException {
 		if (value == null) {
