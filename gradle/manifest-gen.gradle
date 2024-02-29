@@ -23,6 +23,7 @@ jar.bundle.bnd (
 	'Bundle-Vendor': 'Eclipse Sprotty',
 	'Bundle-RequiredExecutionEnvironment': 'JavaSE-11',
 	'Import-Package': "com.google.common.*;version=\"$versions.guava\", *",
+	'-exportcontents': 'org.eclipse.sprotty*',
 	"-savemanifest": "build/tmp/bnd/MANIFEST.MF",
 )
 

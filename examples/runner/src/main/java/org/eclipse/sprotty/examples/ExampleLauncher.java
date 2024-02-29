@@ -23,17 +23,23 @@ import org.eclipse.elk.alg.force.options.ForceMetaDataProvider;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.jetty.websocket.jakarta.server.config.JakartaWebSocketServletContainerInitializer;
+import org.eclipse.sprotty.IDiagramServer;
 import org.eclipse.sprotty.examples.circlegraph.CircleGraphModule;
+import org.eclipse.sprotty.examples.circlegraph.LayoutSelectionAction;
 import org.eclipse.sprotty.layout.ElkLayoutEngine;
+import org.eclipse.sprotty.server.json.ActionTypeAdapter;
+import org.eclipse.sprotty.server.websocket.DiagramServerEndpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 public class ExampleLauncher {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ExampleLauncher.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ExampleLauncher.class);
 
 	public static void main(String[] args) {
 		try {
@@ -56,15 +62,33 @@ public class ExampleLauncher {
 		webAppContext.setWelcomeFiles(new String[] { "index.html" });
 		server.setHandler(webAppContext);
 		
+		final ServerEndpointConfig.Configurator configurator = new ServerEndpointConfig.Configurator() {
+			
+			@SuppressWarnings("unchecked")
+			@Override
+			public <T extends Object> T getEndpointInstance(Class<T> endpointClass) throws InstantiationException {
+				DiagramServerEndpoint endpoint = ((LoggingServerEndpoint) super.getEndpointInstance(endpointClass));
+				endpoint.setGson(getGson());
+				endpoint.setDiagramServerProvider(circleGraphInjector.getInstance(IDiagramServer.Provider.class));
+				return (T) endpoint;
+			}
+		};
+		
 		JakartaWebSocketServletContainerInitializer.configure(webAppContext, (servletContext, serverContainer) -> {
 			serverContainer.addEndpoint(ServerEndpointConfig.Builder
 					.create(LoggingServerEndpoint.class, "/circlegraph")
-					.configurator(new ExampleEndpointConfigurator(circleGraphInjector))
+					.configurator(configurator)
 					.build());
 		});
 		
 		server.start();
 		server.join();
 	}
-	
+
+	private Gson getGson() {
+		final ActionTypeAdapter.Factory factory = new ActionTypeAdapter.Factory();
+		factory.addActionKind(LayoutSelectionAction.KIND, LayoutSelectionAction.class);
+		
+		return new GsonBuilder().registerTypeAdapterFactory(factory).create();
+	}
 }
