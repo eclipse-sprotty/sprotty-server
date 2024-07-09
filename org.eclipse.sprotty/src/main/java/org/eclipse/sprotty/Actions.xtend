@@ -502,12 +502,20 @@ class RequestExportSvgAction implements RequestAction<ExportSvgAction> {
 	public static val KIND = 'requestExportSvg'
 	String kind = KIND
 	
+	ExportSvgOptions options
 	String requestId
 	
 	new() {}
 	new(Consumer<RequestExportSvgAction> initializer) {
 		initializer.accept(this)
 	}
+}
+
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls = true)
+class ExportSvgOptions {
+	boolean skipCopyStyles
 }
 
 /**
