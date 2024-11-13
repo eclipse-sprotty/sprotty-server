@@ -2,8 +2,8 @@
 
 - Create local branch e.g. `release-1.0.0` (optional)
 - Update the version to `version = '1.0.0'` in `sprotty-server/gradle/versions.gradle` and commit
-- Make sure `SONATYPE_USERNAME` and `SONATYPE_PASSWORD` env variables contain the proper __TOKEN__ login information
-  1. Go to https://oss.sonatype.org/
+- Make sure `SONATYPE_USERNAME` and `SONATYPE_PASSWORD` env variables contain the proper __TOKEN__ login information. You can also use `ossrhUsername` and `ossrhPassword` in `gradle.properties` file.
+  1. Go to <https://oss.sonatype.org/>
   2. Go to profile
   3. Change the pulldown from “Summary” to “User Token”
   4. Click on “Access User Token”
