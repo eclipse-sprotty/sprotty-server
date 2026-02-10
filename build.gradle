@@ -25,8 +25,7 @@ buildscript {
 		}
 	}
 	dependencies {
-		// cs: version 6.4 of this plugin uses a gradle API marked as @deprecated, version 7.0.+ requires Java-17, so once Java is upgraded, upgrade this dependency, too!
-		classpath "biz.aQute.bnd:biz.aQute.bnd.gradle:6.4.+"
+		classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:7.2.+'
 		classpath 'org.xtext:xtext-gradle-plugin:4.0.+'
 	}
 }
