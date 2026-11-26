@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2018 TypeFox and others.
+ * Copyright (c) 2017-2026 TypeFox and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -33,6 +33,11 @@ import org.eclipse.lsp4j.services.LanguageServer
 
 /**
  * Web socket endpoint for language servers including the diagram extension.
+ * <p>
+ * The endpoint does not authenticate its clients. Expose it only to trusted clients, or secure it
+ * with authentication and connection limits in the web socket container. The size of incoming
+ * messages is limited by {@link #getMaxMessageSize()}.
+ * </p>
  */
 class LanguageServerEndpoint extends Endpoint {
 	
@@ -53,11 +58,21 @@ class LanguageServerEndpoint extends Endpoint {
 		val serverEndpoint = new RemoteEndpoint(outgoingMessageStream, ServiceEndpoints.toEndpoint(languageServer))
 		jsonHandler.setMethodProvider(serverEndpoint)
 		val incomingMessageStream = new StreamMessageProducer(null, jsonHandler)
-		session.addMessageHandler(new LanguageMessageHandler(incomingMessageStream, serverEndpoint))
+		session.addMessageHandler(new LanguageMessageHandler(incomingMessageStream, serverEndpoint, session, maxMessageSize))
 		
 		val remoteProxy = ServiceEndpoints.toServiceObject(serverEndpoint, LanguageClient)
 		if (languageServer instanceof LanguageClientAware)
 			languageServer.connect(remoteProxy)
+	}
+
+	/**
+	 * The maximum size of a single incoming message in bytes in UTF-8 encoding. When a message exceeds
+	 * this size, it is dropped and the session is closed with status code 1009 (message too big).
+	 * The maximum text message size configured in the web socket container does not apply because
+	 * messages are received in parts. Override this method to change the limit.
+	 */
+	protected def int getMaxMessageSize() {
+		LanguageMessageHandler.DEFAULT_MAX_MESSAGE_SIZE
 	}
 	
 }
